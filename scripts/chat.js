@@ -3,12 +3,24 @@
    Drop-in replacement for your chat.js
 ================================*/
 
+/* ===============================
+   RUNTIME API KEY (SAFE METHOD)
+   - NOT stored in code
+   - NOT committed
+   - Lives only during session
+================================*/
+
+
 /* ------------------------------
    CONFIG / GLOBALS
    - Keep this synced with your config.js if needed
+
+
 -------------------------------*/
+
+
 const BACKEND_URL = (window.BOOSTME_CONFIG && window.BOOSTME_CONFIG.BACKEND_URL) 
-    || "https://groq-proxy-seven.vercel.app/api/groq";
+    || "http://localhost:3000/api/chat";
 
 let appLang = "en-US";
 let currentUser = null; // will be set by your auth check if supabase exists
@@ -97,7 +109,11 @@ async function callAI(input) {
     try {
         const res = await fetch(BACKEND_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+           headers: {
+  "Content-Type": "application/json",
+  
+},
+
             body: JSON.stringify(body)
         });
 
@@ -328,12 +344,10 @@ function clearExistingTimers() {
         timerSoundInterval = null;
     }
     timerRemaining = 0;
-    // Remove UI timer elements & challenge card(s)
+
     document.querySelectorAll(".circle-timer-wrap").forEach(e => e.remove());
     document.querySelectorAll(".challenge-progress-bar").forEach(e => e.remove());
     document.querySelectorAll(".challenge-card").forEach(e => e.remove());
-    // unlock challenge creation
-    challengeLocked = false;
 }
 
 /* ===============================
@@ -341,32 +355,24 @@ function clearExistingTimers() {
    - second param 'cardEl' is optional — used to disable time-btns while running
 ================================*/
 function startChallengeTimer(seconds, cardEl = null) {
-    // Prevent creating a new timer if one is active
     if (challengeLocked) {
         addAIBubble("⚠️ Another challenge is already running.");
         return;
     }
 
-    // Lock creating more challenges until finished/cleared
-    challengeLocked = true;
+    challengeLocked = true; // 🔒 LOCK HERE
 
-    // If a card element provided, disable its buttons
     if (cardEl) {
-        cardEl.querySelectorAll(".time-btn, #applyCustomTimeBtn, #customTimeVal").forEach(el => el.disabled = true);
+        cardEl.querySelectorAll(
+            ".time-btn, #applyCustomTimeBtn, #customTimeVal"
+        ).forEach(el => el.disabled = true);
     }
 
     clearExistingTimers();
+
     addAIBubble("⏱️ Timer started! Focus: " + seconds + "s");
     showCircularTimer(seconds);
     showLinearBarTimer(seconds);
-
-    // Save minutes to local storage (optional stats)
-    try {
-        const prev = parseInt(localStorage.getItem("focus-minutes") || "0", 10);
-        localStorage.setItem("focus-minutes", prev + Math.ceil(seconds / 60));
-    } catch (e) {}
-
-    // After timer finishes, unlock challengeLocked inside finishTimer()
 }
 
 /* ===============================
@@ -407,46 +413,39 @@ function showCircularTimer(seconds) {
 
     // We'll run our interval and handle sound playback once per second when within alert window.
     activeTimer = setInterval(() => {
-        remaining--;
-        timerRemaining = remaining;
-        txt.innerText = remaining + "s";
+    remaining--;
+    timerRemaining = remaining;
+    txt.innerText = remaining + "s";
 
-        const progress = ((seconds - remaining) / seconds) * totalLength;
-        circle.style.strokeDashoffset = progress;
+    const progress = ((seconds - remaining) / seconds) * totalLength;
+    circle.style.strokeDashoffset = progress;
 
-        // If in alert window, start a 1-second playback schedule if not already
-        if (remaining > 0 && remaining <= alertThreshold) {
-            // if we don't have a playing interval, create one that plays once per second,
-            // but only while remaining <= alertThreshold
-            if (!timerSoundInterval && snd) {
-                // Try to play immediately then set interval — this avoids the odd delay
-                try { snd.currentTime = 0; snd.play().catch(()=>{}); } catch (e) {}
-                timerSoundInterval = setInterval(() => {
-                    // only play while we are in the alert window
-                    if (timerRemaining > 0 && timerRemaining <= alertThreshold) {
-                        try { snd.currentTime = 0; snd.play().catch(()=>{}); } catch (e) {}
-                    } else {
-                        // stop interval if outside window
-                        clearInterval(timerSoundInterval);
-                        timerSoundInterval = null;
-                    }
-                }, 1000);
-            }
+    // 🎨 COLOR + 🔔 SOUND
+    if (remaining <= 5 && remaining > 0) {
+        circle.style.stroke = "#ff4e4e";
+        if (snd) {
+            snd.currentTime = 0;
+            snd.play().catch(()=>{});
+        }
+    } else if (remaining <= 15) {
+        circle.style.stroke = "#ff8b2d";
+    } else {
+        circle.style.stroke = "#7b5dff";
+    }
+
+    if (remaining <= 0) {
+        clearInterval(activeTimer);
+        activeTimer = null;
+
+        if (snd) {
+            snd.pause();
+            snd.currentTime = 0;
         }
 
-        if (remaining <= 0) {
-            // stop internal intervals + finish
-            if (timerSoundInterval) {
-                clearInterval(timerSoundInterval);
-                timerSoundInterval = null;
-            }
-            if (snd) {
-                try { snd.pause(); snd.currentTime = 0; } catch (e) {}
-            }
-            finishTimer(seconds);
-        }
+        finishTimer(seconds);
+    }
+}, 1000);
 
-    }, 1000);
 }
 
 /* ===============================
@@ -489,9 +488,9 @@ function showLinearBarTimer(seconds) {
 function finishTimer(seconds) {
     clearExistingTimers();
     addAIBubble(`🔥 Time's up! You nailed that ${seconds}s focus sesh bro!`);
-    // unlock challenges
-    challengeLocked = false;
+    challengeLocked = false; // 🔓 UNLOCK ONLY HERE
 }
+
 
 /* ===============================
    SEND/MAIN flow (mood -> motivate -> challenge)

@@ -95,7 +95,7 @@ function resetToolState() {
    3. AI CALL (NOW USING BACKEND)
 ========================================================= */
 
-const BACKEND_URL = "https://groq-proxy-seven.vercel.app/api/groq";
+const BACKEND_URL = "http://localhost:3000/api/chat";
 async function callAI(messagesArray) {
   try {
     const res = await fetch(BACKEND_URL, {
