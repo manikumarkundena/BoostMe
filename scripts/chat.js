@@ -20,7 +20,7 @@
 
 
 const BACKEND_URL = (window.BOOSTME_CONFIG && window.BOOSTME_CONFIG.BACKEND_URL) 
-    || "http://localhost:3000/api/chat";
+    || "https://boostme-a0ca.onrender.com/api/chat";
 
 let appLang = "en-US";
 let currentUser = null; // will be set by your auth check if supabase exists
