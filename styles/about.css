@@ -1,0 +1,231 @@
+/* -------- PAGE BASE -------- */
+body {
+    background: #f4f5f8;
+    font-family: "Inter", sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 50px 20px;
+    color: #2a2a2a;
+}
+
+/* -------- CONTAINER -------- */
+.about-container {
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+}
+
+/* -------- AVATAR -------- */
+.dev-avatar {
+    width: 115px;
+    height: 115px;
+    border-radius: 50%;
+    background: #fff;
+    padding: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    margin-bottom: 22px;
+}
+
+/* -------- TEXT STYLING -------- */
+.dev-name {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.dev-role {
+    font-size: 15px;
+    color: #707070;
+    margin-bottom: 22px;
+}
+
+/* BIO PARAGRAPHS */
+.dev-bio {
+    font-size: 15.5px;
+    line-height: 1.55;
+    margin: 0 auto 18px auto;
+    max-width: 430px;
+    color: #3c3c3c;
+}
+
+/* -------- STACK CHIPS -------- */
+.stack-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 24px 0 32px 0;
+}
+
+.stack-chip {
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 8px 16px;
+    font-size: 14px;
+    border: 1px solid #e2e2e2;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* -------- SOCIAL BUTTONS -------- */
+.social-row {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.social-btn {
+    padding: 10px 22px;
+    font-size: 15px;
+    border-radius: 10px;
+    background: #eaeaea;
+    color: #333;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.social-btn:hover {
+    background: #dcdcdc;
+}
+
+.social-btn.primary {
+    background: #6265ff;
+    color: #fff;
+}
+
+.social-btn.primary:hover {
+    background: #5457e7;
+}
+
+/* -------- PORTFOLIO BUTTON -------- */
+.portfolio-btn {
+    display: inline-block;
+    padding: 12px 28px;
+    background: #6a6cff;
+    color: white;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 16px;
+    margin-bottom: 34px;
+    transition: 0.25s ease;
+}
+
+.portfolio-btn:hover {
+    background: #595bff;
+}
+
+/* -------- BACK LINK -------- */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #7c4dff;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    opacity: 0.75;
+}
+/* -------- SOCIAL GROUP -------- */
+.social-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 10px;
+    margin-bottom: 35px;
+}
+
+/* All Social Buttons equal size */
+.social-btn {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-size: 15px;
+    font-weight: 500;
+    border: 1px solid #e2e2e2;
+    color: #333;
+    text-decoration: none;
+    min-width: 110px;       /* keeps all same width */
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: 0.25s ease;
+}
+
+.social-btn:hover {
+    background: #f1f1f1;
+    transform: translateY(-2px);
+}
+/* -------- SOCIAL GROUP -------- */
+.social-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 10px;
+    margin-bottom: 35px;
+}
+
+/* -------- SOCIAL BUTTONS -------- */
+.social-btn {
+    padding: 10px 22px;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 12px;
+
+    min-width: 120px;         /* Equal width buttons */
+    text-align: center;
+    text-decoration: none;
+
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+
+    transition: 0.25s ease-in-out;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+/* Hover animation — glow + lift + smooth color */
+.social-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    box-shadow: 0 6px 16px var(--primary-shadow);
+    color: var(--primary-strong);
+}
+
+/* ACTIVE click effect */
+.social-btn:active {
+    transform: scale(0.97);
+    opacity: 0.85;
+}
+
+/* -------------------------
+   DARK MODE SUPPORT
+   Using CSS variables!
+-------------------------- */
+
+:root {
+    --card-bg: #ffffff;
+    --border: #e4e4e4;
+    --text: #222;
+    --shadow: rgba(0,0,0,0.06);
+
+    --primary: #6c63ff;
+    --primary-soft: #efedff;
+    --primary-shadow: rgba(108, 99, 255, 0.25);
+    --primary-strong: #4a43d1;
+}
+
+.dark {
+    --card-bg: #191a1f;
+    --border: #333;
+    --text: #e8e8e8;
+    --shadow: rgba(0,0,0,0.5);
+
+    --primary-soft: #2c2950;
+    --primary-shadow: rgba(118, 92, 255, 0.4);
+    --primary-strong: #a79dff;
+}

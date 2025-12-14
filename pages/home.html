@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BoostMe – Home</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link rel="stylesheet" href="../styles/global.css">
+    <link rel="stylesheet" href="../styles/home.css">
+    
+    <style>
+        .icon-btn-small {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--input); color: var(--text);
+            text-decoration: none; transition: 0.2s;
+        }
+        .icon-btn-small:hover { background: var(--primary); color: white; }
+    </style>
+</head>
+
+<body>
+
+<header class="top-bar">
+    <div class="top-left">
+        <img src="../assets/images/boostme-logo.png" class="top-logo">
+        <div>
+            <div class="top-app-name">BoostMe</div>
+            <div class="top-subtext">Productivity OS</div>
+        </div>
+    </div>
+
+    <div class="top-right" style="display:flex; gap:12px; align-items:center;">
+    
+    <!-- LOGIN BUTTON (hidden after login) -->
+    <a id="loginBtn" href="login.html" class="primary-btn"
+       style="padding: 8px 16px; font-size: 13px; text-decoration:none;">
+        Login
+    </a>
+
+    <!-- PROFILE ICON (hidden before login) -->
+    <div id="profileDropdown" class="profile-wrapper" style="display:none;">
+        <img id="profileAvatar" src="../assets/avatars/default.png" class="profile-avatar">
+
+        <div class="profile-menu">
+            <button onclick="openProfilePage()">👤 Profile</button>
+            <button onclick="openAvatarSelector()">🖼 Change Avatar</button>
+            <button onclick="openSettings()">⚙ Settings</button>
+            <button onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+
+    <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+</div>
+
+    
+</header>
+
+<main class="page-content fade-page">
+
+    <section class="home-greeting">
+        <div class="hello-emoji">👋</div>
+        <div class="greet-title">
+            <span id="typedText"></span>
+        </div>
+        <p class="greet-sub" id="greetSubtitle"></p>
+    </section>
+
+    <section class="vibe-section">
+        <div class="glass-card vibe-card">
+            <div class="vibe-text">
+                <h3>Daily Vibe Check</h3>
+                <p>Scan mood to adjust UI theme.</p>
+            </div>
+            <button class="primary-btn vibe-btn" onclick="openScanner()">
+                <i data-lucide="scan-face"></i> Scan
+            </button>
+        </div>
+    </section>
+
+    <!-- Scanner Modal -->
+    <div id="scannerModal" class="scanner-modal">
+        <div class="scanner-content">
+            <h2 class="scan-title">BIOMETRIC SCAN</h2>
+            <div class="camera-wrapper">
+                <video id="videoFeed" autoplay playsinline></video>
+                <div class="hud-layer">
+                    <div class="scan-laser"></div>
+                    <div class="face-reticle"></div>
+                    <div class="bracket tl"></div><div class="bracket tr"></div>
+                    <div class="bracket bl"></div><div class="bracket br"></div>
+                    <div class="hud-text" id="hudDataText">INIT_SEQ_22<br>SENSORS: ON<br>ISO: 400</div>
+                </div>
+            </div>
+            <div id="scanStatus" class="scan-status-text">INITIALIZING...</div>
+            <button class="danger-btn scan-close-btn" onclick="closeScanner()">ABORT</button>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <section>
+        <h3 class="section-heading">Quick Actions</h3>
+        <div class="quick-grid">
+            <a href="chat.html" class="quick-card">
+                <img src="../assets/icons/chat.png" class="quick-icon"><span>Chat</span>
+            </a>
+            <a href="focus.html" class="quick-card">
+                <img src="../assets/icons/focus.png" class="quick-icon"><span>Focus</span>
+            </a>
+            <a href="chill.html" class="quick-card">
+                <img src="../assets/icons/chill.png" class="quick-icon"><span>Chill</span>
+            </a>
+            <a href="tools.html" class="quick-card">
+                <img src="../assets/icons/tools.png" class="quick-icon"><span>Tools</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Meet the Creator (links to about.html now) -->
+    <section class="challenge-section" style="margin-top: 25px;">
+        <a href="about.html" class="secondary-btn full"
+            style="display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none;">
+            <i data-lucide="code-2" width="18"></i> Meet the Creator
+        </a>
+    </section>
+
+</main>
+
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+    <a href="home.html" class="nav-item active"><img src="../assets/icons/home.png" class="nav-icon"><small>Home</small></a>
+    <a href="chat.html" class="nav-item"><img src="../assets/icons/chat.png" class="nav-icon"><small>Chat</small></a>
+    <a href="focus.html" class="nav-item"><img src="../assets/icons/focus.png" class="nav-icon"><small>Focus</small></a>
+    <a href="chill.html" class="nav-item"><img src="../assets/icons/chill.png" class="nav-icon"><small>Chill</small></a>
+    <a href="tools.html" class="nav-item"><img src="../assets/icons/tools.png" class="nav-icon"><small>Tools</small></a>
+</nav>
+
+<script src="../scripts/sound.js"></script>
+<script src="../scripts/utils.js"></script>
+<script src="../scripts/supabase.js"></script>
+<script src="../scripts/home.js"></script>
+
+<script>
+    lucide.createIcons();
+</script>
+
+</body>
+</html>

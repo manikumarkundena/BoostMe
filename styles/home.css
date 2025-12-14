@@ -1,0 +1,418 @@
+/* ===========================
+   GREETING SECTION
+=========================== */
+
+.home-greeting {
+    text-align: center;
+    margin-top: 15px;
+}
+
+/* Waving emoji animation */
+.hello-emoji {
+    font-size: 48px;
+    display: inline-block;
+    transform-origin: 70% 70%;
+    animation: wave 1.25s infinite ease-in-out, glowPulse 3s infinite ease-in-out;
+}
+
+@keyframes wave {
+    0% { transform: rotate(0deg); }
+    15% { transform: rotate(18deg); }
+    30% { transform: rotate(-10deg); }
+    45% { transform: rotate(16deg); }
+    60% { transform: rotate(-6deg); }
+    100% { transform: rotate(0deg); }
+}
+
+@keyframes glowPulse {
+    0% { text-shadow: 0 0 0px var(--primary); }
+    50% { text-shadow: 0 0 15px var(--primary); }
+    100% { text-shadow: 0 0 0px var(--primary); }
+}
+
+/* GREETING TEXT */
+.greet-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 10px;
+    color: var(--text);
+    text-align: center;
+}
+
+/* Typing animation characters */
+.char {
+    opacity: 0;
+    display: inline-block;
+    animation: fadeIn 0.15s forwards ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0px); }
+}
+
+/* Subtitle */
+.greet-sub {
+    font-size: 15px;
+    color: var(--subtext);
+    margin-top: 6px;
+}
+
+/* Mascot animation */
+.home-mascot {
+    width: 75px;
+    margin-top: 16px;
+    border-radius: 20px;
+    animation: floaty 3s infinite ease-in-out, blink 4s infinite;
+}
+
+@keyframes floaty {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.3); }
+}
+
+/* ===========================
+   QUICK ACTIONS
+=========================== */
+
+.quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 20px;
+}
+
+/* Each Quick Card */
+.quick-card {
+    background: var(--card);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+    padding: 22px 14px;
+    text-align: center;
+    font-size: 28px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: transform .25s ease, box-shadow .25s ease;
+    transform-style: preserve-3d;
+}
+
+/* Card Title */
+.quick-card span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--subtext);
+}
+
+/* Icon styling */
+.quick-icon {
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 6px;
+    filter: drop-shadow(0 0 6px rgba(120, 80, 255, 0.3));
+    transition: transform .25s ease, filter .25s ease;
+}
+
+/* Hover Effects */
+.quick-card:hover {
+    transform: scale(1.06) translateZ(10px);
+    box-shadow: 0 0 20px rgba(120, 80, 255, 0.35);
+}
+
+.quick-card:hover .quick-icon {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 12px rgba(140, 90, 255, 0.7));
+}
+
+/* Challenge section */
+.challenge-section {
+    margin-top: 25px;
+}
+
+.full {
+    width: 100%;
+}
+
+/* DARK MODE FIXES */
+body.dark .quick-icon {
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.25));
+}
+
+body.dark .quick-card:hover .quick-icon {
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.6));
+}
+/* ===============================
+   VIBE CHECK CARD
+================================*/
+.vibe-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(108, 99, 255, 0.05));
+    border: 1px solid rgba(108, 99, 255, 0.2);
+}
+
+.vibe-text h3 { margin: 0; font-size: 16px; }
+.vibe-text p { margin: 4px 0 0; font-size: 12px; color: var(--subtext); }
+
+.vibe-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+}
+
+/* ===============================
+   SCANNER MODAL (The Sci-Fi Part)
+================================*/
+/* ===============================
+   🕵️ SC-FI SCANNER HUD
+================================*/
+.scanner-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 5, 10, 0.95); /* Deep Cyberpunk Black */
+    z-index: 2000;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.scanner-content {
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    text-align: center;
+}
+
+/* CAMERA FRAME */
+.camera-wrapper {
+    position: relative;
+    width: 100%;
+    height: 450px; /* Taller for mobile faces */
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.1);
+}
+
+#videoFeed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* Mirror */
+    opacity: 0.8;
+}
+
+/* HUD OVERLAYS */
+.hud-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* 1. CORNER BRACKETS */
+.bracket {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #0ff;
+    box-shadow: 0 0 10px #0ff;
+}
+.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+.br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
+/* 2. SCANNING LASER */
+.scan-laser {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: #0ff;
+    box-shadow: 0 0 15px #0ff, 0 0 30px #0ff;
+    animation: laserScan 2.5s infinite ease-in-out;
+    opacity: 0.8;
+}
+
+@keyframes laserScan {
+    0% { top: 5%; opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { top: 95%; opacity: 0; }
+}
+
+/* 3. SCROLLING DATA TEXT */
+.hud-text {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: rgba(0, 255, 255, 0.7);
+    text-align: right;
+    line-height: 1.4;
+    text-shadow: 0 0 5px #0ff;
+}
+
+/* 4. CENTER RETICLE (Face Target) */
+.face-reticle {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 180px; height: 220px;
+    transform: translate(-50%, -50%);
+    border: 1px dashed rgba(0, 255, 255, 0.5);
+    border-radius: 50% / 40%;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1) inset;
+    animation: breathe 2s infinite;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); border-color: rgba(0,255,255,0.3); }
+    50% { transform: translate(-50%, -50%) scale(1.05); border-color: rgba(0,255,255,0.8); }
+}
+
+/* STATUS TEXT BELOW */
+.scan-status-text {
+    margin-top: 15px;
+    font-family: monospace;
+    color: #0ff;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ===============================
+   👨‍💻 ABOUT MODAL STYLES
+================================*/
+
+/* Reusing the overlay logic from login */
+.auth-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.auth-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.about-card {
+    background: var(--card);
+    width: 90%;
+    max-width: 360px;
+    border-radius: 24px;
+    padding: 24px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.2);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.auth-overlay.active .about-card {
+    transform: scale(1);
+}
+
+/* Profile Image */
+.dev-profile-img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: #f0f0f0;
+    border: 4px solid var(--card);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    margin-top: -50px; /* Pops out of top */
+    margin-bottom: 12px;
+}
+
+.profile-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.close-icon-btn {
+    position: absolute;
+    right: 0;
+    top: -10px;
+    background: none;
+    border: none;
+    color: var(--subtext);
+    cursor: pointer;
+}
+
+/* Typography */
+.dev-name { margin: 5px 0 2px; font-size: 20px; font-weight: 800; color: var(--text); }
+.dev-role { margin: 0 0 15px; font-size: 13px; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.dev-bio { font-size: 14px; color: var(--subtext); line-height: 1.5; margin-bottom: 20px; }
+
+/* Tech Stack Chips */
+.stack-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.stack-chip {
+    background: var(--input);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Social Buttons */
+.social-row {
+    display: flex;
+    gap: 10px;
+}
+
+.social-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--text);
+    transition: 0.2s;
+}
+
+.social-btn.primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+}
+
+.social-btn:hover { transform: translateY(-2px); }

@@ -1,0 +1,311 @@
+/* ===============================
+   TOOLS GRID (Selection Menu)
+================================= */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+/* Tool Card */
+.tool-card {
+  background: var(--card);
+  padding: 16px 14px;
+  border-radius: 16px;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  box-shadow: var(--shadow);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  color: var(--text);
+}
+
+.tool-title {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-card span {
+  font-size: 12px;
+  color: var(--subtext);
+  font-weight: 400;
+  display: block;
+}
+
+.tool-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.25);
+  border-color: var(--primary);
+}
+
+.tool-card.active-tool {
+  border-color: var(--primary);
+  background: rgba(108, 99, 255, 0.08);
+  transform: scale(1.02);
+  box-shadow: 0 0 14px rgba(108, 99, 255, 0.4);
+}
+
+/* ===============================
+   TOOL PANEL (Chat Container)
+================================= */
+.tool-panel {
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  color: var(--text);
+  overflow: hidden; /* Contains children */
+  display: flex;
+  flex-direction: column;
+  height: 70vh; /* Fixed height for chat feel */
+  min-height: 500px;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+body.dark .tool-panel {
+    border-color: rgba(255,255,255,0.1);
+}
+
+/* Header inside panel */
+.tool-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  flex-shrink: 0;
+  background: var(--card);
+  z-index: 10;
+}
+
+body.dark .tool-header { border-color: rgba(255,255,255,0.08); }
+
+.tool-hint {
+  color: var(--subtext);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ===============================
+   1. OUTPUT AREA (Scrollable History)
+================================= */
+.tool-output-area {
+  flex: 1; /* Fills remaining space */
+  overflow-y: auto; /* Scrollable */
+  padding: 20px;
+  background: rgba(0,0,0,0.02); /* Slight contrast */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  scroll-behavior: smooth;
+}
+
+body.dark .tool-output-area { background: rgba(0,0,0,0.15); }
+
+/* Placeholder */
+.placeholder-msg {
+  text-align: center;
+  color: var(--subtext);
+  margin-top: 60px;
+  font-style: italic;
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+/* USER MESSAGE BUBBLE */
+.tool-user-msg {
+  align-self: flex-end;
+  background: rgba(108, 99, 255, 0.15);
+  padding: 12px 16px;
+  border-radius: 14px 14px 0 14px;
+  font-size: 14px;
+  color: var(--text);
+  max-width: 85%;
+  border-left: 3px solid var(--primary);
+  animation: slideInRight 0.3s ease;
+}
+
+/* AI MESSAGE BUBBLE */
+.tool-ai-msg {
+  align-self: flex-start;
+  width: 100%;
+  max-width: 95%;
+  background: var(--card);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px 14px 14px 0;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  font-size: 15px;
+  line-height: 1.6;
+  animation: slideInLeft 0.3s ease;
+}
+
+body.dark .tool-ai-msg {
+    background: #1e1e24;
+    border-color: rgba(255,255,255,0.1);
+}
+
+/* Animations */
+@keyframes slideInRight { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+/* Content Styling inside AI Msg */
+.tool-ai-msg h1, .tool-ai-msg h2, .tool-ai-msg h3 { margin-top: 0; font-size: 16px; font-weight: 700; color: var(--primary); }
+.tool-ai-msg ul { padding-left: 20px; margin: 8px 0; }
+.tool-ai-msg li { margin-bottom: 4px; }
+.tool-ai-msg strong { color: var(--text); }
+
+/* ===============================
+   2. INPUT AREA (Fixed Bottom)
+================================= */
+.tool-input-area {
+  padding: 15px;
+  background: var(--card);
+  border-top: 1px solid rgba(0,0,0,0.06);
+  flex-shrink: 0; /* Prevents shrinking */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body.dark .tool-input-area { border-color: rgba(255,255,255,0.08); }
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.tool-input {
+  width: 100%;
+  min-height: 50px;
+  max-height: 120px;
+  padding: 14px 50px 14px 14px; /* Right padding for mic */
+  border-radius: 18px;
+  background: var(--input);
+  border: 1px solid transparent;
+  font-size: 14px;
+  color: var(--text);
+  resize: none;
+  font-family: inherit;
+}
+
+.tool-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--card);
+  box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.1);
+}
+
+/* Mic Button inside Input */
+.mic-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--subtext);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.mic-btn:hover { background: rgba(0,0,0,0.05); color: var(--primary); }
+.mic-btn.active { color: #ff4e4e; animation: pulse 1.5s infinite; }
+
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+/* Controls Row */
+.tool-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.voice-status {
+  font-size: 12px;
+  color: var(--subtext);
+  font-style: italic;
+}
+
+.run-btn {
+  margin-left: auto;
+  padding: 10px 24px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.25);
+  transition: transform 0.2s;
+}
+
+.run-btn:active { transform: scale(0.95); }
+
+/* ===============================
+   CODE BLOCKS (Prism)
+================================= */
+.code-block-wrapper {
+  position: relative;
+  margin: 12px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.code-block-wrapper pre {
+  margin: 0;
+  padding: 16px;
+  background: #1e1e1e; /* Always dark for code */
+  color: #8c0cf4;
+  font-size: 13px;
+  overflow-x: auto;
+  font-family: 'Fira Code', monospace;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  opacity: 0.7;
+  transition: 0.2s;
+}
+
+.copy-btn:hover { opacity: 1; background: rgba(255,255,255,0.2); }
+
+/* ===============================
+   LOADING INDICATOR
+================================= */
+.loading-dots {
+  display: flex;
+  gap: 6px;
+  padding: 10px;
+  margin-left: 10px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}

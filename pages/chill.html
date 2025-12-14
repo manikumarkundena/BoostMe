@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BoostMe – Chill Zone</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+   <style>
+        .icon-btn-small {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--input); color: var(--text);
+            text-decoration: none; transition: 0.2s;
+        }
+        .icon-btn-small:hover { background: var(--primary); color: white; }
+    </style>
+  <link rel="stylesheet" href="../styles/global.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/chill.css">
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div class="top-left">
+    <img src="../assets/images/boostme-logo.png" class="top-logo">
+    <div>
+      <div class="top-app-name">BoostMe</div>
+      <div class="top-subtext">Decompress & Relax</div>
+    </div>
+  </div>
+  <div class="top-right" style="display: flex; gap: 12px; align-items: center;">
+        
+        <!-- 📊 STATS MOVED HERE -->
+        <a href="dashboard.html" class="icon-btn-small" aria-label="Stats">
+            <i data-lucide="bar-chart-2" width="20"></i>
+        </a>
+
+        <!-- Theme Toggle -->
+        <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+    </div>
+</header>
+
+<main class="page-content">
+
+  <!-- CHILL GRID MENU -->
+  <div class="chill-grid">
+    
+    <!-- 1. BREATHE -->
+    <div class="chill-card active-mode" onclick="switchMode('breathe')">
+      <div class="icon-box purple"><i data-lucide="wind"></i></div>
+      <div class="card-info">
+        <h3>Breathe</h3>
+        <p>4-7-8 Technique</p>
+      </div>
+    </div>
+
+    <!-- 2. POP IT -->
+    <div class="chill-card" onclick="switchMode('pop')">
+      <div class="icon-box blue"><i data-lucide="circle-dot"></i></div>
+      <div class="card-info">
+        <h3>Pop It</h3>
+        <p>Stress Relief</p>
+      </div>
+    </div>
+
+    <!-- 3. LO-FI MUSIC -->
+    <div class="chill-card" onclick="toggleMusic(this)">
+      <div class="icon-box pink"><i data-lucide="music"></i></div>
+      <div class="card-info">
+        <h3>Lo-Fi</h3>
+        <p>Tap to Play</p>
+      </div>
+      <div class="music-waves">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- 4. VENT FIRE -->
+    <div class="chill-card" onclick="switchMode('fire')">
+      <div class="icon-box orange"><i data-lucide="flame"></i></div>
+      <div class="card-info">
+        <h3>Vent Box</h3>
+        <p>Burn your worries</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ACTIVE MODE AREA -->
+  <section id="activeZone" class="active-zone">
+    
+    <!-- 🫁 BREATHING UI -->
+    <div id="breatheUI" class="mode-ui">
+      <div class="breathe-circle">
+        <span id="breatheText">Inhale</span>
+      </div>
+      <p class="instruction">Follow the rhythm to calm your mind.</p>
+    </div>
+
+
+    <!-- 🫧 BUBBLE WRAP UI -->
+    <div id="popUI" class="mode-ui" style="display:none;">
+      <p id="stressLabel" style="color:var(--subtext); font-size:13px; margin-bottom:10px;">Stress Level: High 😤</p>
+      <div class="bubble-grid" id="bubbleGrid"></div>
+      <button class="text-btn" onclick="resetBubbles()">Reset Sheet 🔄</button>
+    </div>
+
+    <!-- 🔥 BONFIRE UI -->
+    <div id="fireUI" class="mode-ui" style="display:none;">
+      <div class="fire-container">
+        <div class="fire-animation">
+          <div class="flame"></div>
+          <div class="flame"></div>
+          <div class="flame"></div>
+          <div class="logs"></div>
+        </div>
+      </div>
+      
+      <div id="ventInputArea">
+        <textarea id="ventText" class="vent-input" placeholder="What's bothering you? Type it here..."></textarea>
+        <button class="primary-btn fire-btn" onclick="burnStress()">
+          Throw in Fire 🔥
+        </button>
+      </div>
+
+      <div id="postBurnMsg" class="wisdom-text" style="display:none;">
+        <!-- Wisdom quote inserted by JS -->
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="home.html" class="nav-item"><img src="../assets/icons/home.png" class="nav-icon"><small>Home</small></a>
+  <a href="chat.html" class="nav-item"><img src="../assets/icons/chat.png" class="nav-icon"><small>Chat</small></a>
+  <a href="focus.html" class="nav-item"><img src="../assets/icons/focus.png" class="nav-icon"><small>Focus</small></a>
+  <a href="chill.html" class="nav-item active"><img src="../assets/icons/chill.png" class="nav-icon"><small>Chill</small></a>
+  <a href="tools.html" class="nav-item"><img src="../assets/icons/tools.png" class="nav-icon"><small>Tools</small></a>
+</nav>
+
+<!-- 🔊 SOUND EFFECTS -->
+<!-- Pop Sound: Bubble wrap pop -->
+<audio id="popSound" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.m4a"></audio>
+
+<!-- Breathe Sound: Soft chime/wind for transitions -->
+<audio id="breatheSound" src="https://assets.mixkit.co/active_storage/sfx/209/209-preview.m4a"></audio>
+
+<!-- Fire Sound: Cracking fire (Optional, adding for immersion) -->
+<audio id="fireSound" src="https://assets.mixkit.co/active_storage/sfx/1169/1169-preview.m4a"></audio>
+
+<!-- Lo-Fi Music: Live Stream -->
+<audio id="lofiMusic" crossorigin="anonymous">
+    <source src="https://play.streamafrica.net/lofiradio" type="audio/mp3">
+</audio>
+<script src="../scripts/sound.js"></script>
+<script src="../scripts/utils.js"></script>
+<script src="../scripts/chill.js"></script>
+
+</body>
+</html>

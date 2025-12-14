@@ -1,0 +1,61 @@
+.avatar-container {
+    padding: 20px;
+    text-align: center;
+}
+
+.avatar-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.avatar-subtitle {
+    opacity: 0.7;
+    margin-bottom: 25px;
+}
+
+.avatar-preview-card {
+    width: 180px;
+    margin: 0 auto 25px;
+    padding: 15px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.avatar-preview-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 14px;
+    background: var(--card);
+}
+
+.grid-title {
+    margin-top: 15px;
+    font-size: 20px;
+}
+
+.avatar-grid {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 18px;
+}
+
+.avatar-option {
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--input);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.avatar-option:hover {
+    transform: scale(1.08);
+    background: var(--primary);
+}
+
+.avatar-option img {
+    width: 70px;
+    height: 70px;
+    border-radius: 10px;
+}

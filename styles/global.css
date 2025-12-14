@@ -1,0 +1,442 @@
+/* ===================================
+   THEME VARIABLES (LIGHT)
+=================================== */
+/* In global.css */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+:root {
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --text: #222;
+    --subtext: #666;
+    --primary: #6c63ff;
+
+    --input: #ececf1;
+    --bubble-ai: #6c63ff;
+    --bubble-user: #e4e4eb;
+
+    --shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* ===================================
+   THEME VARIABLES (DARK) — optional
+=================================== */
+body.dark {
+    --bg: #0f0f11;
+    --card: #18181c;
+    --text: #f2f2f7;
+    --subtext: #aaa;
+    --primary: #7d74ff;
+
+    --input: #242428;
+    --bubble-ai: #7d74ff;
+    --bubble-user: #2d2d32;
+
+    --shadow: 0 6px 18px rgba(0,0,0,0.55);
+}
+
+/* ===================================
+   TRANSITIONS
+=================================== */
+* {
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* ===================================
+   BASE LAYOUT
+=================================== */
+body {
+    margin: 0;
+    font-family: "Inter", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.page-content {
+    padding: 18px 16px 100px;
+    animation: fadeSlide 0.35s ease;
+}
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================================
+   TOP BAR
+=================================== */
+.top-bar {
+    background: var(--card);
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    box-shadow: var(--shadow);
+    border-radius: 0 0 20px 20px;
+
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.top-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-logo {
+    width: 40px;
+    border-radius: 12px;
+}
+
+.top-app-name {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.top-subtext {
+    font-size: 12px;
+    color: var(--subtext);
+}
+
+.theme-toggle {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* ===================================
+   BOTTOM NAV
+=================================== */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    height: 70px;
+    background: var(--card);
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+
+    z-index: 30;
+}
+
+.nav-item {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    font-size: 13px;
+    color: var(--subtext);
+}
+
+.nav-item span {
+    display: block;
+    font-size: 20px;
+}
+
+.nav-item.active {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* ===================================
+   FORM ELEMENTS
+=================================== */
+input {
+    background: var(--input);
+    border: none;
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.primary-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.secondary-btn {
+    background: #dedee3;
+    color: #333;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 14px;
+    cursor: pointer;
+}
+
+/* ===================================
+   CHAT BUBBLES
+=================================== */
+.ai-bubble {
+    background: var(--bubble-ai);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 14px;
+    max-width: 80%;
+    margin-bottom: 12px;
+}
+
+.user-bubble {
+    background: var(--bubble-user);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 14px;
+    margin-left: auto;
+    max-width: 80%;
+    margin-bottom: 12px;
+}
+
+/* ===================================
+   GLASS CARD SUPPORT
+=================================== */
+.glass-card {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(14px);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+}
+
+/* ===================================
+   FLOATING MASCOT (animated)
+=================================== */
+.mascot {
+    position: fixed;
+    bottom: 85px;
+    right: 16px;
+    width: 52px;
+    border-radius: 20px;
+    animation: floaty 3s infinite ease-in-out;
+}
+
+@keyframes floaty {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0); }
+}
+.nav-icon {
+    width: 42px;        /* Perfect clarity */
+    height: 42px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+    transition: transform .25s ease, filter .25s ease;
+}
+
+/* ACTIVE styling */
+.nav-item.active .nav-icon {
+    transform: scale(1.15);
+}
+
+/* Hover animation */
+.nav-item:hover .nav-icon {
+    transform: scale(1.10);
+}
+
+/* DARK MODE – invert only when needed */
+body.dark .nav-icon {
+    filter: brightness(1.15);
+}
+button, .chip, .tool-card, .nav-item, .floating-quick-btn {
+    cursor: pointer;
+}
+/* ===============================
+   💎 ICON STYLES (Lucide)
+================================*/
+
+/* General SVG sizing */
+i[data-lucide] {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.5px; /* Thicker, bolder lines */
+}
+
+/* 1. Icon Only Button (Circle) */
+.icon-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.secondary-icon {
+    background: transparent;
+    color: var(--subtext);
+}
+
+.secondary-icon:hover {
+    background: rgba(0,0,0,0.05);
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+/* 2. Send Button Fix */
+.send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0; /* Remove padding to center icon */
+}
+
+.send-btn i {
+    margin-left: -2px; /* Visual optical alignment */
+}
+
+/* 3. Mic Button in Tools (Floating) */
+.mic-btn {
+    /* Existing style override */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 4. Focus Buttons (Icon + Text) */
+.icon-text-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+}
+
+.icon-only-btn {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dark mode tweaks */
+body.dark .secondary-icon:hover {
+    background: rgba(255,255,255,0.1);
+}
+/* Snappy Button Presses */
+button:active, .tool-card:active, .nav-item:active {
+    transform: scale(0.96) !important;
+    transition: transform 0.05s ease;
+}
+
+/* Notion-style Clean Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--subtext); opacity: 0.3; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* Glass Borders for Dark Mode Depth */
+.card, .tool-card, .ai-bubble {
+    border: 1px solid rgba(255,255,255, 0.08);
+}
+
+.auth-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--primary);
+}
+
+.profile-menu {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 10px 0;
+    width: 180px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.profile-menu.show {
+    display: flex;
+}
+
+.profile-menu button {
+    background: none;
+    border: none;
+    padding: 12px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.profile-menu button:hover {
+    background: var(--input);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.profile-wrapper {
+    position: relative;
+    cursor: pointer;
+}
+
+.profile-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    object-fit: cover;
+}
+
+.profile-menu {
+    display: none;
+    position: absolute;
+    top: 45px;
+    right: 0;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 10px;
+    width: 170px;
+    box-shadow: var(--shadow);
+    z-index: 999;
+}
+
+.profile-wrapper:hover .profile-menu {
+    display: block;
+}
+
+.profile-menu button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    font-size: 14px;
+}
+
+.profile-menu button:hover {
+    background: var(--primary);
+    color: white;
+    border-radius: 8px;
+}

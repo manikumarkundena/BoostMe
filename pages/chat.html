@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BoostMe – Chat</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        .icon-btn-small {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--input); color: var(--text);
+            text-decoration: none; transition: 0.2s;
+        }
+        .icon-btn-small:hover { background: var(--primary); color: white; }
+    </style>
+
+    <link rel="stylesheet" href="../styles/global.css">
+    <link rel="stylesheet" href="../styles/chat.css">
+</head>
+
+<body>
+
+<!-- ===============================
+        TOP BAR
+================================= -->
+<header class="top-bar">
+    <div class="top-left">
+        <img src="../assets/images/boostme-logo.png" class="top-logo">
+        <div>
+            <div class="top-app-name">BoostMe</div>
+            <div class="top-subtext">Chat Assistant</div>
+        </div>
+    </div>
+
+    <button id="historyBtn" class="history-btn">
+        <i data-lucide="history"></i> History
+    </button>
+
+    <div class="top-right" style="display: flex; gap: 12px; align-items: center;">
+
+        <!-- Stats -->
+        <a href="dashboard.html" class="icon-btn-small" aria-label="Stats">
+            <i data-lucide="bar-chart-2" width="20"></i>
+        </a>
+
+        <!-- Theme Toggle -->
+        <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+    </div>
+</header>
+
+
+<!-- ===============================
+        MAIN PAGE CONTENT
+================================= -->
+<main class="page-content">
+
+    <!-- Suggestion Chips -->
+    <div class="suggestions">
+        <button class="chip">I’m feeling distracted</button>
+        <button class="chip">Give me a study tip</button>
+        <button class="chip">Boost my mood</button>
+    </div>
+
+    <!-- Chat Box -->
+    <div id="chatBox" class="chat-box">
+        <div class="ai-bubble">
+            Hey dude 👋<br>
+            I’m BoostMe — tell me what’s up.
+        </div>
+    </div>
+
+</main>
+
+<audio id="timerSound" src="../assets/sounds/alert.mp3"></audio>
+
+
+<!-- ===============================
+        INPUT ROW
+================================= -->
+<div class="chat-input-area">
+    <button id="chatVoiceBtn" class="icon-btn secondary-icon">
+        <i data-lucide="mic"></i>
+    </button>
+
+    <input id="userInput" type="text" placeholder="Type something..." autocomplete="off">
+
+    <button id="sendBtn" class="send-btn">
+        <i data-lucide="send-horizontal"></i>
+    </button>
+</div>
+
+
+<!-- ===============================
+       FLOATING QUICK CHALLENGE BTN
+================================= -->
+<button class="floating-quick-btn" onclick="manualChallenge()">
+    ⚡ Quick Challenge
+</button>
+
+
+<!-- ===============================
+        BOTTOM NAV
+================================= -->
+<nav class="bottom-nav">
+    <a href="home.html" class="nav-item">
+        <img src="../assets/icons/home.png" class="nav-icon"><small>Home</small>
+    </a>
+
+    <a href="chat.html" class="nav-item active">
+        <img src="../assets/icons/chat.png" class="nav-icon"><small>Chat</small>
+    </a>
+
+    <a href="focus.html" class="nav-item">
+        <img src="../assets/icons/focus.png" class="nav-icon"><small>Focus</small>
+    </a>
+
+    <a href="chill.html" class="nav-item">
+        <img src="../assets/icons/chill.png" class="nav-icon"><small>Chill</small>
+    </a>
+
+    <a href="tools.html" class="nav-item">
+        <img src="../assets/icons/tools.png" class="nav-icon"><small>Tools</small>
+    </a>
+</nav>
+
+
+<!-- ===============================
+        CHAT HISTORY MODAL
+================================= -->
+<div id="historyModal" class="history-modal">
+    <div class="history-content">
+        <h2>Your Chat History</h2>
+
+        <div id="historyList" class="history-list">
+            <!-- Loaded dynamically -->
+        </div>
+
+        <div class="history-actions">
+            <button id="clearHistoryBtn" class="danger-btn">Clear All History</button>
+            <button onclick="closeHistory()" class="close-btn">Close</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ===============================
+        JS SCRIPTS — ORDER MATTERS!
+================================= -->
+
+<!-- MUST LOAD FIRST (Supabase, currentUser, API settings) -->
+<script src="../scripts/config.js"></script>
+
+<!-- Helpers -->
+<script src="../scripts/utils.js"></script>
+<script src="../scripts/sound.js"></script>
+
+<!-- Chat logic (depends on all above) -->
+<script src="../scripts/chat.js"></script>
+
+<script>
+    // Activate lucide icons
+    lucide.createIcons();
+</script>
+
+</body>
+</html>

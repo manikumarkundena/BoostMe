@@ -1,0 +1,61 @@
+/* ===============================
+   DASHBOARD (STATS) PAGE
+================================= */
+
+/* Stats row */
+.stats-row {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Stat card */
+.stat-card {
+    background: var(--card);
+    padding: 18px;
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--subtext);
+}
+
+.stat-value {
+    margin-top: 6px;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Graph box */
+.mini-graph-placeholder {
+    background: var(--input);
+    padding: 28px;
+    border-radius: 18px;
+    text-align: center;
+    color: var(--primary);
+    font-size: 14px;
+    margin-top: 10px;
+    box-shadow: var(--shadow);
+}
+/* ===============================
+   CHART CONTAINER
+================================*/
+.chart-container {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    margin-top: 15px;
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+body.dark .chart-container {
+    background: #1e1e24;
+}

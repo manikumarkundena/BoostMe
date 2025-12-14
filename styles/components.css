@@ -1,0 +1,118 @@
+/* Generic cards */
+.card,
+.focus-card,
+.tool-card,
+.stat-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  margin-bottom: 14px;
+}
+
+/* Floating quick challenge button */
+.floating-quick-btn {
+  position: fixed;
+  bottom: 90px;
+  right: 18px;
+  background: #6c63ff;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+/* Section heading */
+.section-heading {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 10px 0 12px;
+}
+
+/* Chips */
+.chip-row {
+  display: flex;
+  gap: 8px;
+}
+
+.chip {
+  border: none;
+  background: #f1f0ff;
+  color: #6c63ff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Mini list */
+.mini-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.mini-list li {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* Stats */
+.stats-row {
+  display: flex;
+  gap: 10px;
+}
+
+.stat-card {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #777;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* Placeholder graph */
+.mini-graph-placeholder {
+  height: 120px;
+  border-radius: 16px;
+  background: #f1f0ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c63ff;
+  font-size: 14px;
+}
+.nav-icon {
+    width: 42px;        /* Perfect clarity */
+    height: 42px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+    transition: transform .25s ease, filter .25s ease;
+}
+
+/* ACTIVE styling */
+.nav-item.active .nav-icon {
+    transform: scale(1.15);
+}
+
+/* Hover animation */
+.nav-item:hover .nav-icon {
+    transform: scale(1.10);
+}
+
+/* DARK MODE – invert only when needed */
+body.dark .nav-icon {
+    filter: brightness(1.15);
+}

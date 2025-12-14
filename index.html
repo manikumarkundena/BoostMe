@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BoostMe</title>
+
+  <!-- Global styles only -->
+  <link rel="stylesheet" href="styles/global.css">
+  <link rel="stylesheet" href="styles/components.css">
+
+  <style>
+    .landing-body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: var(--bg);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .landing-container {
+      max-width: 420px;
+      background: var(--card);
+      padding: 40px 28px;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      animation: fadeSlide 0.5s ease;
+    }
+
+    .landing-logo {
+      width: 90px;
+      margin-bottom: 20px;
+      animation: floaty 3s infinite ease-in-out;
+    }
+
+    .landing-title {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0;
+      color: var(--text);
+    }
+
+    .landing-subtitle {
+      color: var(--subtext);
+      font-size: 15px;
+      margin: 12px 0 28px;
+    }
+
+    .full {
+      width: 100%;
+      display: block;
+      text-align: center;
+      margin-bottom: 14px;
+      font-size: 16px;
+      text-decoration:none;
+    }
+  </style>
+</head>
+<body class="landing-body">
+
+  <div class="landing-container">
+    <img src="assets/images/boostme-logo.png" class="landing-logo" alt="BoostMe logo">
+
+    <h1 class="landing-title">BoostMe</h1>
+    <p class="landing-subtitle">
+      Your AI-powered buddy for focus, motivation, and smarter study sessions.
+    </p>
+
+    <a href="pages/home.html" class="primary-btn full">Continue</a>
+  </div>
+
+</body>
+</html>

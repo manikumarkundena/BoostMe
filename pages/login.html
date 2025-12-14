@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BoostMe – Access</title>
+    <link rel="stylesheet" href="../styles/global.css">
+    <link rel="stylesheet" href="../styles/login.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <div class="login-container">
+        <div class="login-card">
+            
+            <div class="login-header">
+                <img src="../assets/images/boostme-logo.png" class="login-logo" alt="Logo">
+                <h1 id="pageTitle">Welcome Back</h1>
+                <p id="pageSub">Enter your credentials to access your focus stats.</p>
+            </div>
+
+            <div id="alertBox" class="alert-box" style="display:none;"></div>
+
+            <div class="login-form">
+                <div id="avatarSection" class="avatar-wrapper" style="display:none;">
+    <div class="avatar-preview">
+        <img id="avatarImg" src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" alt="Avatar">
+    </div>
+    <button id="shuffleBtn" class="secondary-btn small-btn" type="button">
+        <i data-lucide="refresh-cw"></i> Shuffle
+    </button>
+</div>
+                
+                <div class="input-group" id="nameGroup" style="display:none;">
+                    <i data-lucide="user" class="input-icon"></i>
+                    <input type="text" id="nameInput" placeholder="Full Name">
+                </div>
+
+                <div class="input-group">
+                    <i data-lucide="mail" class="input-icon"></i>
+                    <input type="email" id="emailInput" placeholder="name@example.com">
+                </div>
+
+                <div class="input-group">
+                    <i data-lucide="lock" class="input-icon"></i>
+                    <input type="password" id="passwordInput" placeholder="Password">
+                    <button id="togglePass" class="eye-btn"><i data-lucide="eye"></i></button>
+                </div>
+
+                <button id="authBtn" class="primary-btn full-width">
+                    Login
+                </button>
+            </div>
+
+            <div class="login-footer">
+                <p id="toggleText">Don't have an account? <span id="toggleLink" class="link">Sign Up</span></p>
+                <a href="home.html" class="back-link">
+                    <i data-lucide="arrow-left" width="16"></i> Back to Home
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="../scripts/supabase.js"></script>
+    <script src="../scripts/login.js"></script>
+    <script>lucide.createIcons();</script>
+
+</body>
+</html>
