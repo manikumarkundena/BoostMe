@@ -4,9 +4,9 @@ console.log("Tools page ready 🚀");
    STATE MANAGEMENT
 ========================================================= */
 let selectedTool = "";
-let conversationHistory = []; // Stores the chat context for the active tool
+let conversationHistory = [];
 let isLoading = false;
-let typingInterval = null; // For the typing sound effect
+let typingInterval = null;
 
 const outputBox = document.getElementById("toolOutput");
 const inputBox = document.getElementById("toolInput");
@@ -15,198 +15,173 @@ const toolTitleEl = document.getElementById("toolTitle");
 const toolHintEl = document.querySelector(".tool-hint");
 
 /* =========================================================
-   1. SYSTEM PROMPTS (Improved)
+   1. SYSTEM PROMPT (ENGLISH ONLY — DO NOT REMOVE)
 ========================================================= */
 const BASE_SYSTEM_PROMPT = `
-You are "BoostMe Tools", an elite AI assistant.
+You are **BoostMe Tools**, a friendly but highly skilled AI assistant 🤝.
 
-CORE BEHAVIOR:
-- **Language Agnostic:** Detect the user's language (Telugu, Hindi, English, etc.) and reply in the EXACT same language/tone.
-- **Formatting:** Use Markdown (## headings, **bold**, - lists).
-- **Code:** MUST be in fenced blocks like \`\`\`js ... \`\`\`.
-- **Style:** Concise, direct, helpful, and friendly ("Mawa" vibes if appropriate).
+STRICT RULES (VERY IMPORTANT):
+- Respond in **ENGLISH ONLY**
+- Friendly, modern, supportive tone (light emojis allowed 😊🔥)
+- No robotic tone
+- Clear, structured, helpful answers
+
+FORMATTING RULES:
+- Use Markdown (## headings, **bold**, - lists)
+- ALL code MUST be inside fenced blocks like:
+\`\`\`js
+code here
+\`\`\`
+- Keep answers practical and clean
 `;
 
+/* =========================================================
+   TOOL ROLES (POLISHED)
+========================================================= */
 const TOOL_DEFINITIONS = {
-  planner: "You are an expert Day Planner. Create structured schedules with time blocks, emojis, and focus sessions.",
-  writer: "You are a Creative Writer. Help draft emails, captions, poems, or essays. Offer 2 variations (Formal vs Creative).",
-  study: "You are a Study Buddy. Explain complex topics simply. Use analogies, bullet points, and offer a 3-question mini-quiz at the end.",
-  ideas: "You are an Idea Generator. Brainstorm unique, high-value ideas for the user's topic. Be trendy and innovative.",
-  dev: "You are a Senior Developer. Debug code, explain errors, and provide optimized, clean solutions in code blocks."
+  planner: `
+You are a **Productivity Coach 🕒**
+- Create realistic schedules
+- Use time blocks, breaks & emojis
+- Avoid overload
+`,
+
+  writer: `
+You are a **Creative Content Writer ✍️**
+- Give 2 versions (Formal & Creative)
+- Use engaging hooks
+- Improve clarity & flow
+`,
+
+  study: `
+You are a **Study Buddy 📚**
+- Explain like I’m 10
+- Use real-life analogies
+- End with a 2–3 question mini quiz
+`,
+
+  ideas: `
+You are an **Idea Machine 💡**
+- Give fresh, trendy ideas
+- Avoid generic suggestions
+- Explain WHY each idea works
+`,
+
+  dev: `
+You are a **Senior Developer 👨‍💻**
+- Explain errors simply
+- Give clean, optimized code
+- Mention common mistakes
+`
 };
 
 const PLACEHOLDERS = {
-  planner: "e.g., I have a math exam tomorrow and want to study 4 hours...",
-  writer: "e.g., Write a LinkedIn post about my new project...",
-  study: "e.g., Explain Quantum Physics like I'm 5...",
-  ideas: "e.g., YouTube channel ideas for cooking...",
+  planner: "Plan my day for 6 hours of study with breaks...",
+  writer: "Write a LinkedIn post about my new AI project...",
+  study: "Explain recursion in simple terms...",
+  ideas: "Give YouTube content ideas for tech reels...",
   dev: "Paste your broken code here..."
 };
 
 /* =========================================================
-   2. TOOL SELECTION LOGIC
+   2. TOOL SELECTION
 ========================================================= */
 document.querySelectorAll(".tool-card").forEach(card => {
-  card.addEventListener("click", () => {
+  card.onclick = () => {
     const newTool = card.dataset.tool;
-
-    // 🔊 Sound Effect
-    if (window.synth) window.synth.click();
-
-    // If switching to a new tool, reset everything
     if (selectedTool !== newTool) {
       selectedTool = newTool;
       resetToolState();
     }
 
-    // Update UI Active State
     document.querySelectorAll(".tool-card").forEach(c => c.classList.remove("active-tool"));
     card.classList.add("active-tool");
 
-    // Update Titles & Hints
-    const titleText = card.querySelector(".tool-title").innerText;
-    toolTitleEl.innerText = titleText;
-    toolHintEl.innerText = "Mode Active. Type below to start.";
+    toolTitleEl.innerText = card.querySelector(".tool-title").innerText;
+    toolHintEl.innerText = "Mode active. Type below 👇";
     inputBox.placeholder = PLACEHOLDERS[selectedTool];
 
-    // Scroll to panel & Focus input
-    const panel = document.querySelector(".tool-panel");
-    panel.scrollIntoView({ behavior: "smooth" });
-
-    setTimeout(() => inputBox.focus(), 500);
-  });
+    document.querySelector(".tool-panel").scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => inputBox.focus(), 400);
+  };
 });
 
 function resetToolState() {
-  conversationHistory = []; // Clear memory
-  outputBox.innerHTML = ""; // Clear screen
+  conversationHistory = [];
+  outputBox.innerHTML = "";
   inputBox.value = "";
 
-  if (selectedTool && TOOL_DEFINITIONS[selectedTool]) {
-    conversationHistory.push({
-      role: "system",
-      content: BASE_SYSTEM_PROMPT + "\n\nCURRENT ROLE: " +
-               TOOL_DEFINITIONS[selectedTool]
-    });
-  }
+  conversationHistory.push({
+    role: "system",
+    content: BASE_SYSTEM_PROMPT + "\n\nCURRENT ROLE:\n" + TOOL_DEFINITIONS[selectedTool]
+  });
 }
 
 /* =========================================================
-   3. AI CALL (NOW USING BACKEND)
+   3. BACKEND AI CALL
 ========================================================= */
-
 const BACKEND_URL = "https://boostme-a0ca.onrender.com/api/chat";
-async function callAI(messagesArray) {
+
+async function callAI(messages) {
   try {
     const res = await fetch(BACKEND_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: messagesArray })
+      body: JSON.stringify({ messages })
     });
 
     const data = await res.json();
 
-    // Backend error
-    if (data.error) {
-      return "⚠️ API Error: " + data.error;
-    }
-
-    // GROQ FORMAT: choices[0].message.content
-    if (data?.choices?.[0]?.message?.content) {
+    if (data?.choices?.[0]?.message?.content)
       return data.choices[0].message.content;
-    }
 
-    // Simple content: { content: "..." }
-    if (typeof data?.content === "string") {
+    if (typeof data?.content === "string")
       return data.content;
-    }
 
-    // Array format: { content: [ { text: "..." }, ... ] }
-    if (Array.isArray(data?.content)) {
-      return data.content.map(c => c.text || "").join("\n").trim();
-    }
-
-    return "⚠️ No AI response received.";
+    return "⚠️ No response received.";
   } catch (e) {
-    console.error("AI Call Error:", e);
-    return "⚠️ Network Error. Backend not running?";
+    console.error(e);
+    return "⚠️ Backend error. Please try again.";
   }
 }
 
 /* =========================================================
-   4. RUN TOOL HANDLER
+   4. RUN TOOL
 ========================================================= */
 async function handleRunTool() {
-  if (isLoading) return;
+  if (isLoading || !selectedTool) return;
 
-  if (!selectedTool) {
-    alert("Please select a tool first!");
-    return;
-  }
-
-  const userInput = inputBox.value.trim();
-  if (!userInput) return;
-
-  if (window.synth) window.synth.click();
+  const text = inputBox.value.trim();
+  if (!text) return;
 
   isLoading = true;
-  runBtn.innerHTML = `<i data-lucide="loader-2" class="spin"></i> Thinking...`;
-  runBtn.style.opacity = "0.7";
+  runBtn.innerHTML = "Thinking… ⏳";
+  runBtn.disabled = true;
 
-  conversationHistory.push({ role: "user", content: userInput });
-  appendMessage("user", userInput);
+  appendMessage("user", text);
+  conversationHistory.push({ role: "user", content: text });
   inputBox.value = "";
 
-  const loadingId = showLoading();
+  const loaderId = showLoading();
+  const reply = await callAI(conversationHistory);
 
-  if (window.synth) {
-    typingInterval = setInterval(() => window.synth.typing(), 150);
-  }
+  removeLoading(loaderId);
+  conversationHistory.push({ role: "assistant", content: reply });
+  appendMessage("ai", reply);
 
-  const aiResponse = await callAI(conversationHistory);
-
-  if (typingInterval) {
-    clearInterval(typingInterval);
-    typingInterval = null;
-  }
-
-  removeLoading(loadingId);
+  runBtn.innerHTML = "Run ✨";
+  runBtn.disabled = false;
   isLoading = false;
-  runBtn.innerHTML = `Run <i data-lucide="sparkles"></i>`;
-  runBtn.style.opacity = "1";
 
-  conversationHistory.push({ role: "assistant", content: aiResponse });
-  appendMessage("ai", aiResponse);
-
-  if (window.synth) window.synth.success();
-
-  if (window.lucide) lucide.createIcons();
+  if (window.Prism) Prism.highlightAll();
 }
 
-runBtn.addEventListener("click", handleRunTool);
-
-/* =========================================================
-   ⌨️ ENTER KEY LISTENER
-========================================================= */
-inputBox.addEventListener("keydown", (e) => {
+runBtn.onclick = handleRunTool;
+inputBox.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     handleRunTool();
   }
-  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-    e.preventDefault();
-    handleRunTool();
-  }
-});
-
-/* =========================================================
-   💾 AUTO-SAVE INPUT
-========================================================= */
-const savedInput = localStorage.getItem("tool_autosave_input");
-if (savedInput) inputBox.value = savedInput;
-
-inputBox.addEventListener("input", (e) => {
-  localStorage.setItem("tool_autosave_input", e.target.value);
 });
 
 /* =========================================================
@@ -217,20 +192,15 @@ function appendMessage(role, text) {
 
   if (role === "user") {
     div.className = "tool-user-msg";
-    div.innerHTML = `<strong>You</strong> ${escapeHtml(text)}`;
+    div.innerHTML = `<strong>You:</strong> ${escapeHtml(text)}`;
   } else {
     div.className = "tool-ai-msg";
     div.innerHTML = formatAIOutput(text);
-
-    if (window.Prism) Prism.highlightAllUnder(div);
     wireCopyButtons(div);
   }
 
   outputBox.appendChild(div);
-
-  requestAnimationFrame(() => {
-    outputBox.scrollTop = outputBox.scrollHeight;
-  });
+  outputBox.scrollTop = outputBox.scrollHeight;
 }
 
 function showLoading() {
@@ -238,10 +208,8 @@ function showLoading() {
   const div = document.createElement("div");
   div.id = id;
   div.className = "loading-dots";
-  div.style.padding = "10px";
-  div.innerHTML = `<span></span><span></span><span></span>`;
+  div.innerHTML = "<span></span><span></span><span></span>";
   outputBox.appendChild(div);
-  outputBox.scrollTop = outputBox.scrollHeight;
   return id;
 }
 
@@ -251,41 +219,40 @@ function removeLoading(id) {
 }
 
 function escapeHtml(text) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return text.replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;");
 }
 
 /* =========================================================
-   6. FORMATTER & UTILS
+   6. CHATGPT-STYLE CODE BLOCK FORMATTER
 ========================================================= */
 function formatAIOutput(raw) {
   if (!raw) return "";
-  let text = raw;
 
-  const codeBlocks = [];
-  text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (m, lang, code) => {
-    const index = codeBlocks.length;
-    codeBlocks.push({ lang: lang || "plaintext", code });
-    return `[[CODE_${index}]]`;
+  let text = raw;
+  const blocks = [];
+
+  text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    const id = blocks.length;
+    blocks.push({ lang: lang || "text", code });
+    return `[[CODE_${id}]]`;
   });
 
-  text = text.replace(/^### (.*)$/gm, "<h3>$1</h3>");
-  text = text.replace(/^## (.*)$/gm, "<h2>$1</h2>");
-  text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-  text = text.replace(/^- (.*)$/gm, "<li>$1</li>");
-  text = text.replace(/(<li>[\s\S]*?<\/li>)/g, "<ul>$1</ul>");
-  text = text.replace(/\n/g, "<br>");
+  text = text.replace(/^## (.*)$/gm, "<h2>$1</h2>")
+             .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+             .replace(/\n/g, "<br>");
 
-  codeBlocks.forEach((b, i) => {
-    const html = `
+  blocks.forEach((b, i) => {
+    text = text.replace(`[[CODE_${i}]]`, `
       <div class="code-block-wrapper">
-        <button class="copy-btn">Copy</button>
+        <div class="code-block-header">
+          <span class="code-lang">${b.lang}</span>
+          <button class="copy-btn">Copy code</button>
+        </div>
         <pre><code class="language-${b.lang}">${escapeHtml(b.code)}</code></pre>
       </div>
-    `;
-    text = text.replace(`[[CODE_${i}]]`, html);
+    `);
   });
 
   return text;
@@ -294,44 +261,38 @@ function formatAIOutput(raw) {
 function wireCopyButtons(container) {
   container.querySelectorAll(".copy-btn").forEach(btn => {
     btn.onclick = () => {
-      if (window.synth) window.synth.click();
-
-      const codeBlock = btn.parentElement.querySelector("code");
-      if (codeBlock) {
-        const code = codeBlock.innerText;
-        navigator.clipboard.writeText(code);
-        btn.innerText = "Copied!";
-        setTimeout(() => (btn.innerText = "Copy"), 1200);
-      }
+      const code = btn.parentElement.nextElementSibling.innerText;
+      navigator.clipboard.writeText(code);
+      btn.innerText = "Copied ✓";
+      setTimeout(() => btn.innerText = "Copy code", 1200);
     };
   });
 }
-
 /* =========================================================
-   7. VOICE INPUT LOGIC
+   7. 🎤 VOICE INPUT (ADD THIS)
 ========================================================= */
+
 const micBtn = document.getElementById("voiceBtn");
 const voiceStatus = document.getElementById("voiceStatus");
 
-if ("webkitSpeechRecognition" in window) {
+if ("webkitSpeechRecognition" in window && micBtn) {
   const recognition = new webkitSpeechRecognition();
-  recognition.lang = "en-US";
+  recognition.lang = "en-US"; // English only
   recognition.continuous = false;
+  recognition.interimResults = false;
 
   micBtn.onclick = () => {
     if (isLoading) return;
 
-    if (window.synth) window.synth.click();
+    micBtn.classList.add("active");
+    if (voiceStatus) voiceStatus.innerText = "Listening… 🎧";
 
     recognition.start();
-    micBtn.classList.add("active");
-    if (voiceStatus) voiceStatus.innerText = "Listening...";
   };
 
-  recognition.onresult = (e) => {
-    const txt = e.results[0][0].transcript;
-    inputBox.value += txt + " ";
-    localStorage.setItem("tool_autosave_input", inputBox.value);
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    inputBox.value += transcript + " ";
     inputBox.focus();
   };
 
@@ -339,6 +300,13 @@ if ("webkitSpeechRecognition" in window) {
     micBtn.classList.remove("active");
     if (voiceStatus) voiceStatus.innerText = "";
   };
+
+  recognition.onerror = (e) => {
+    console.error("Voice error:", e);
+    micBtn.classList.remove("active");
+    if (voiceStatus) voiceStatus.innerText = "Voice error ❌";
+  };
 } else {
+  // Browser not supported
   if (micBtn) micBtn.style.display = "none";
 }

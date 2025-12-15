@@ -13,18 +13,20 @@
 <body>
 
   <header class="top-bar">
-
     <div class="top-left">
-      <img src="../assets/images/boostme-logo.png" class="top-logo" alt="BoostMe">
-      <div>
-        <div class="top-app-name">BoostMe</div>
-        <div class="top-subtext">Progress & Analytics</div>
-      </div>
+        <img src="../assets/images/boostme-logo.png" class="top-logo">
+        <div>
+            <div class="top-app-name">BoostMe</div>
+            <div class="top-subtext">Productivity OS</div>
+        </div>
     </div>
 
-    <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+    <!-- 🔥 THIS IS IMPORTANT -->
+    <div class="top-right" id="navbar-right">
+        <!-- navbar.js injects content here -->
+    </div>
+</header>
 
-  </header>
 
   <main class="page-content">
 
@@ -83,10 +85,30 @@
 
    
   </nav>
-  <script src="../scripts/sound.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <script src="../scripts/utils.js"></script>
-  <script src="../scripts/dashboard.js"></script>
+  <!-- 1️⃣ External libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- 2️⃣ App config -->
+<script src="../scripts/config.js"></script>
+
+<!-- 3️⃣ Supabase client -->
+<script src="../scripts/supabase.js"></script>
+
+<!-- 4️⃣ Navbar (login / profile / dashboard / theme) -->
+<script src="../scripts/navbar.js"></script>
+
+<!-- 5️⃣ Helpers -->
+<script src="../scripts/utils.js"></script>
+<script src="../scripts/sound.js"></script>
+
+<!-- 6️⃣ Page logic -->
+<script src="../scripts/dashboard.js"></script>
+
+<script>
+  lucide.createIcons();
+</script>
+
 </body>
 </html>

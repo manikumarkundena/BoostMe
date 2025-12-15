@@ -19,11 +19,12 @@
 -------------------------------*/
 
 
+
 const BACKEND_URL = (window.BOOSTME_CONFIG && window.BOOSTME_CONFIG.BACKEND_URL) 
     || "https://boostme-a0ca.onrender.com/api/chat";
 
 let appLang = "en-US";
-let currentUser = null; // will be set by your auth check if supabase exists
+ // will be set by your auth check if supabase exists
 
 // Timer flags to prevent duplicate challenges / multiple timers
 let activeTimer = null;
@@ -34,22 +35,7 @@ let challengeLocked = false; // prevents duplicate challenge creation while a ch
 /* ------------------------------
    SAFETY: try to auto-load supabase user if available
 -------------------------------*/
-if (typeof supabase !== "undefined" && supabase && supabase.auth) {
-    supabase.auth.getSession().then(res => {
-        currentUser = res?.data?.session?.user || null;
-        window.currentUser = currentUser;
-    }).catch(e => {
-        console.warn("Supabase session check failed:", e);
-    });
 
-    // keep currentUser updated on auth changes (your existing pattern)
-    if (supabase.auth.onAuthStateChange) {
-        supabase.auth.onAuthStateChange((_event, _session) => {
-            currentUser = _session?.user || null;
-            window.currentUser = currentUser;
-        });
-    }
-}
 
 /* ===============================
    LANGUAGE / PROMPT HELPERS
@@ -510,9 +496,11 @@ async function sendMessage() {
     appLang = langInfo.speechLang || "en-US";
 
     // Save user message to Supabase if available (preserve your flow)
-    if (currentUser && typeof sb !== "undefined") {
+    if (window.currentUser && typeof sb !== "undefined") {
+
         try {
-            sb.from("chat_messages").insert({ user_id: currentUser.id, sender: "user", message: msg }).catch(()=>{});
+            sb.from("chat_messages").insert({ user_id: window.currentUser.id
+, sender: "user", message: msg }).catch(()=>{});
         } catch (e) {}
     }
 
@@ -522,8 +510,10 @@ async function sendMessage() {
     hideTyping();
     addAIBubble(mood || "⚠️ AI Error");
 
-    if (currentUser && typeof sb !== "undefined") {
-        try { sb.from("chat_messages").insert({ user_id: currentUser.id, sender: "ai", message: mood || "" }).catch(()=>{}); } catch(e){}
+   if (window.currentUser && typeof sb !== "undefined") {
+
+        try { sb.from("chat_messages").insert({ user_id: window.currentUser.id
+, sender: "ai", message: mood || "" }).catch(()=>{}); } catch(e){}
     }
 
     // 2) Motivation
@@ -532,8 +522,10 @@ async function sendMessage() {
     hideTyping();
     addAIBubble(motivate || "⚠️ AI Error");
 
-    if (currentUser && typeof sb !== "undefined") {
-        try { sb.from("chat_messages").insert({ user_id: currentUser.id, sender: "ai", message: motivate || "" }).catch(()=>{}); } catch(e){}
+    if (window.currentUser && typeof sb !== "undefined") {
+
+        try { sb.from("chat_messages").insert({ user_id: window.currentUser.id
+, sender: "ai", message: motivate || "" }).catch(()=>{}); } catch(e){}
     }
 
     // 3) Challenge — create card (prevents duplicates inside createChallengeCard)
@@ -542,8 +534,10 @@ async function sendMessage() {
     hideTyping();
     createChallengeCard(challenge || "Take 3 slow deep breaths.");
 
-    if (currentUser && typeof sb !== "undefined") {
-        try { sb.from("chat_messages").insert({ user_id: currentUser.id, sender: "ai", message: challenge || "" }).catch(()=>{}); } catch(e){}
+    if (window.currentUser && typeof sb !== "undefined") {
+
+        try { sb.from("chat_messages").insert({ user_id: window.currentUser.id
+, sender: "ai", message: challenge || "" }).catch(()=>{}); } catch(e){}
     }
 }
 
@@ -562,8 +556,9 @@ async function manualChallenge() {
     const ch = await callAI(challengePrompt(langInfo));
     hideTyping();
     createChallengeCard(ch || "Do 10 seconds stretch.");
-    if (currentUser && typeof sb !== "undefined") {
-        try { sb.from("chat_messages").insert({ user_id: currentUser.id, sender: "ai", message: ch || "" }).catch(()=>{}); } catch(e){}
+    if (window.currentUser && typeof sb !== "undefined") {
+
+        try { sb.from("chat_messages").insert({ user_id: window.currentUser.id, sender: "ai", message: ch || "" }).catch(()=>{}); } catch(e){}
     }
 }
 
@@ -641,6 +636,7 @@ clearHistoryBtn && (clearHistoryBtn.onclick = async () => {
    VOICE input wiring (keeps behavior)
 ================================*/
 const voiceBtn = document.getElementById("chatVoiceBtn");
+
 if (voiceBtn && ("webkitSpeechRecognition" in window)) {
     const recognition = new webkitSpeechRecognition();
     recognition.lang = "en-US";
@@ -648,7 +644,7 @@ if (voiceBtn && ("webkitSpeechRecognition" in window)) {
     recognition.interimResults = false;
 
     voiceBtn.onclick = () => {
-        voiceBtn.classList.add("recording");
+        voiceBtn.classList.add("active"); // 🔴 RED MODE ON
         recognition.start();
     };
 
@@ -659,49 +655,47 @@ if (voiceBtn && ("webkitSpeechRecognition" in window)) {
     };
 
     recognition.onend = () => {
-        voiceBtn.classList.remove("recording");
+        voiceBtn.classList.remove("active"); // 🔴 RED MODE OFF
     };
 
-    recognition.onerror = (event) => {
-        console.error("Voice Error:", event.error);
-        voiceBtn.classList.remove("recording");
+    recognition.onerror = () => {
+        voiceBtn.classList.remove("active"); // safety
     };
-} else if (voiceBtn) {
-    voiceBtn.style.display = "none";
 }
 
 /* ===============================
    INIT / EVENT BINDINGS
 ================================*/
-document.addEventListener("DOMContentLoaded", () => {
-    // load chat history if user exists
-    if (typeof loadChatHistory === "function") {
-        try { loadChatHistory(); } catch (e) { console.warn(e); }
-    }
-
-    // buttons + input
+function initChat() {
     const sendBtn = document.getElementById("sendBtn");
     const userInput = document.getElementById("userInput");
-    if (sendBtn) sendBtn.onclick = sendMessage;
-    if (userInput) {
-        userInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+
+    if (!sendBtn || !userInput) {
+        console.warn("Chat DOM not ready yet, retrying...");
+        return setTimeout(initChat, 100);
     }
 
-    // suggestion chips (existing code)
+    sendBtn.onclick = sendMessage;
+
+    userInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
     document.querySelectorAll(".chip").forEach(chip => {
         chip.onclick = () => {
-            const ui = document.getElementById("userInput");
-            if (ui) ui.value = chip.innerText;
+            userInput.value = chip.innerText;
             sendMessage();
         };
     });
 
-    // manual quick challenge button
     const quick = document.querySelector(".floating-quick-btn");
     if (quick) quick.onclick = manualChallenge;
-});
+
+    console.log("✅ Chat initialized");
+}
+
+// 🔥 IMPORTANT: run AFTER navbar & auth
+setTimeout(initChat, 0);

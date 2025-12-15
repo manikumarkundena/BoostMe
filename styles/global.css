@@ -440,3 +440,204 @@ button:active, .tool-card:active, .nav-item:active {
     color: white;
     border-radius: 8px;
 }
+.profile-dropdown {
+  display: none;
+}
+
+.profile-dropdown.open {
+  display: block;
+}
+
+.profile-wrapper {
+    position: relative;
+}
+
+.profile-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.profile-menu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 8px;
+    display: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.profile-wrapper:hover .profile-menu {
+    display: block;
+}
+/* ===============================
+   TOP NAVBAR FIX
+================================ */
+
+/* ===============================
+   PROFILE DROPDOWN FIX
+================================ */
+
+.profile-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.profile-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--primary);
+}
+
+.profile-menu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+
+    background: var(--card);
+    border-radius: 12px;
+    padding: 6px;
+    min-width: 180px;
+
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.profile-wrapper:hover .profile-menu {
+    display: flex;
+}
+
+.profile-menu button {
+    background: transparent;
+    border: none;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.profile-menu button:hover {
+    background: var(--input);
+}
+
+
+
+.top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 14px 20px;
+    background: var(--card);
+    border-radius: 16px;
+    margin: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.top-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-logo {
+    width: 40px;
+    height: 40px;
+}
+
+.top-right,
+#navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.icon-btn-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--input);
+    color: var(--text);
+    transition: 0.2s;
+}
+
+.icon-btn-small:hover {
+    background: var(--primary);
+    color: white;
+}
+/* ================================
+   CHATGPT-STYLE CODE BLOCK
+================================ */
+
+.code-block-wrapper {
+  background: #0f172a; /* dark slate */
+  border-radius: 12px;
+  margin: 14px 0;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+/* Top bar */
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background: #020617;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.code-lang {
+  font-size: 12px;
+  font-weight: 600;
+  color: #93c5fd; /* blue */
+  text-transform: lowercase;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: #cbd5f5;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.copy-btn:hover {
+  color: #ffffff;
+}
+
+/* Code body */
+.code-block-wrapper pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  font-size: 14px;
+}
+
+/* Scrollbar (optional sexy touch) */
+.code-block-wrapper pre::-webkit-scrollbar {
+  height: 6px;
+}
+.code-block-wrapper pre::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}

@@ -22,24 +22,20 @@
 
 <!-- TOP BAR -->
 <header class="top-bar">
-  <div class="top-left">
-    <img src="../assets/images/boostme-logo.png" class="top-logo">
-    <div>
-      <div class="top-app-name">BoostMe</div>
-      <div class="top-subtext">Decompress & Relax</div>
+    <div class="top-left">
+        <img src="../assets/images/boostme-logo.png" class="top-logo">
+        <div>
+            <div class="top-app-name">BoostMe</div>
+            <div class="top-subtext">Productivity OS</div>
+        </div>
     </div>
-  </div>
-  <div class="top-right" style="display: flex; gap: 12px; align-items: center;">
-        
-        <!-- 📊 STATS MOVED HERE -->
-        <a href="dashboard.html" class="icon-btn-small" aria-label="Stats">
-            <i data-lucide="bar-chart-2" width="20"></i>
-        </a>
 
-        <!-- Theme Toggle -->
-        <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+    <!-- 🔥 THIS IS IMPORTANT -->
+    <div class="top-right" id="navbar-right">
+        <!-- navbar.js injects content here -->
     </div>
 </header>
+
 
 <main class="page-content">
 
@@ -156,9 +152,30 @@
 <audio id="lofiMusic" crossorigin="anonymous">
     <source src="https://play.streamafrica.net/lofiradio" type="audio/mp3">
 </audio>
-<script src="../scripts/sound.js"></script>
+<!-- 1️⃣ External libs -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- 2️⃣ App config -->
+<script src="../scripts/config.js"></script>
+
+<!-- 3️⃣ Supabase client (creates window.sb) -->
+<script src="../scripts/supabase.js"></script>
+
+<!-- 4️⃣ Navbar logic (login / dashboard / avatar / theme) -->
+<script src="../scripts/navbar.js"></script>
+
+<!-- 5️⃣ Helpers -->
 <script src="../scripts/utils.js"></script>
+<script src="../scripts/sound.js"></script>
+
+<!-- 6️⃣ Page-specific logic -->
 <script src="../scripts/chill.js"></script>
+
+<script>
+  lucide.createIcons();
+</script>
+
 
 </body>
 </html>

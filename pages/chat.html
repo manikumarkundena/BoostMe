@@ -29,25 +29,16 @@
         <img src="../assets/images/boostme-logo.png" class="top-logo">
         <div>
             <div class="top-app-name">BoostMe</div>
-            <div class="top-subtext">Chat Assistant</div>
+            <div class="top-subtext">Productivity OS</div>
         </div>
     </div>
 
-    <button id="historyBtn" class="history-btn">
-        <i data-lucide="history"></i> History
-    </button>
-
-    <div class="top-right" style="display: flex; gap: 12px; align-items: center;">
-
-        <!-- Stats -->
-        <a href="dashboard.html" class="icon-btn-small" aria-label="Stats">
-            <i data-lucide="bar-chart-2" width="20"></i>
-        </a>
-
-        <!-- Theme Toggle -->
-        <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+    <!-- 🔥 THIS IS IMPORTANT -->
+    <div class="top-right" id="navbar-right">
+        <!-- navbar.js injects content here -->
     </div>
 </header>
+
 
 
 <!-- ===============================
@@ -80,6 +71,7 @@
 ================================= -->
 <div class="chat-input-area">
     <button id="chatVoiceBtn" class="icon-btn secondary-icon">
+        <span id="voiceStatus"></span>
         <i data-lucide="mic"></i>
     </button>
 
@@ -147,20 +139,27 @@
 <!-- ===============================
         JS SCRIPTS — ORDER MATTERS!
 ================================= -->
+<!-- 1️⃣ Core libs -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- MUST LOAD FIRST (Supabase, currentUser, API settings) -->
+<!-- 2️⃣ App config -->
 <script src="../scripts/config.js"></script>
 
-<!-- Helpers -->
+<!-- 3️⃣ Supabase client (sb created here) -->
+<script src="../scripts/supabase.js"></script>
+
+<!-- 4️⃣ Navbar (depends on sb) -->
+<script src="../scripts/navbar.js"></script>
+
+<!-- 5️⃣ Utilities -->
 <script src="../scripts/utils.js"></script>
 <script src="../scripts/sound.js"></script>
 
-<!-- Chat logic (depends on all above) -->
+<!-- 6️⃣ Page logic -->
 <script src="../scripts/chat.js"></script>
 
 <script>
-    // Activate lucide icons
-    lucide.createIcons();
+  lucide.createIcons();
 </script>
 
 </body>
