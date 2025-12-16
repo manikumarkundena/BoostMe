@@ -2,7 +2,8 @@
 //  SUPABASE CLIENT SETUP
 // ================================
 const SUPABASE_URL = "https://iygvxqkzdpmelgzggvio.supabase.co"; // your URL
-const SUPABASE_KEY = "sb_publishable_kvcj_5TVeYRkxujDoG8lhw_OcZRbPYz"; // anon key only
+const SUPABASE_KEY = "sb_publishable_kvcj_5TVeYRkxujDoG8lhw_OcZRbPYz";
+// anon key only
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -65,7 +66,7 @@ async function handleMagicLogin() {
     }
 }
 
-// Expose these globally if you call from HTML
+// Expose these globally
 window.openAuth = openAuth;
 window.closeAuth = closeAuth;
 window.handleMagicLogin = handleMagicLogin;
@@ -75,7 +76,6 @@ window.handleMagicLogin = handleMagicLogin;
 // ================================
 async function ensureProfileRow(user) {
     if (!user) return;
-
     const { data, error } = await sb
         .from("profiles")
         .select("id")
@@ -106,18 +106,16 @@ async function checkUser() {
     const {
         data: { session }
     } = await sb.auth.getSession();
-
     currentUser = session?.user || null;
     window.currentUser = currentUser;
 
     const loginBtn = document.getElementById("loginBtn");
     const profileWrapper = document.getElementById("profileDropdown");
     const profileAvatar = document.getElementById("profileAvatar");
-    const authArea = document.getElementById("authArea"); // optional container in some pages
+    const authArea = document.getElementById("authArea");
 
     if (currentUser) {
         await ensureProfileRow(currentUser);
-
         // Avatar from auth metadata or default
         const meta = currentUser.user_metadata || {};
         const avatarUrl =
@@ -126,12 +124,12 @@ async function checkUser() {
                 currentUser.email || "BoostUser"
             )}`;
 
-        // Top-right login/profile (home.html etc.)
+        // Top-right login/profile
         if (loginBtn) loginBtn.style.display = "none";
         if (profileWrapper) profileWrapper.style.display = "flex";
         if (profileAvatar) profileAvatar.src = avatarUrl;
 
-        // Optional generic auth area (if you use it somewhere)
+        // Optional generic auth area
         if (authArea) {
             authArea.innerHTML = `
                 <div class="profile-wrapper" id="profileDropdown">
@@ -144,7 +142,6 @@ async function checkUser() {
                     </div>
                 </div>
             `;
-
             const profileBtn = document.getElementById("profileBtn");
             const profileMenu = document.getElementById("profileMenu");
             if (profileBtn && profileMenu) {
@@ -179,8 +176,9 @@ document.addEventListener("DOMContentLoaded", checkUser);
 // ================================
 async function syncDailyStats() {
     if (!currentUser) return;
-
-    const today = new Date().toISOString().split("T")[0];
+    
+    // FIX: Use Local Time so stats don't save to "yesterday" if it's late at night
+    const today = new Date().toLocaleDateString('en-CA');
 
     let { data, error } = await sb
         .from("daily_stats")
@@ -211,51 +209,56 @@ async function syncDailyStats() {
 }
 
 // Call this from focus.js when a focus session completes
-async function saveFocusSession(minutes, mode = "focus") {
-    if (!currentUser) return;
+async function saveDailyStats({
+  focusMinutes = 0,
+  challengeMinutes = 0,
+  gamesPlayed = 0,
+  completedTasks = 0,
+  chats = 0,
+  challengesCompleted = 0,
+  moodScore = null
+}) {
+  if (!currentUser) return;
+  
+  // FIX: Use Local Time here too
+  const today = new Date().toLocaleDateString('en-CA');
 
-    const today = new Date().toISOString().split("T")[0];
+  const { data, error } = await sb
+    .from("daily_stats")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .eq("date", today)
+    .maybeSingle();
 
-    // upsert daily_stats
-    let { data, error } = await sb
-        .from("daily_stats")
-        .select("focus_minutes")
-        .eq("user_id", currentUser.id)
-        .eq("date", today)
-        .single();
+  if (error) {
+    console.error("❌ daily_stats fetch error:", error);
+    return;
+  }
 
-    if (error && error.code !== "PGRST116") {
-        console.log("daily_stats error:", error);
-    }
+  const updated = {
+    user_id: currentUser.id,
+    date: today,
+    focus_minutes: (data?.focus_minutes || 0) + focusMinutes,
+    challenge_minutes: (data?.challenge_minutes || 0) + challengeMinutes,
+    games_played: (data?.games_played || 0) + gamesPlayed,
+    completed_tasks: (data?.completed_tasks || 0) + completedTasks,
+    chats: (data?.chats || 0) + chats,
+    challenges_completed: (data?.challenges_completed || 0) + challengesCompleted,
+    mood_score: moodScore ?? data?.mood_score ?? null
+  };
 
-    const newTotal = (data?.focus_minutes || 0) + minutes;
+  const { error: upsertError } = await sb
+    .from("daily_stats")
+    .upsert(updated, { onConflict: "user_id,date" });
 
-    await sb
-        .from("daily_stats")
-        .upsert(
-            {
-                user_id: currentUser.id,
-                date: today,
-                focus_minutes: newTotal
-            },
-            { onConflict: "user_id,date" }
-        );
-
-    // Log session separately
-    await sb.from("focus_sessions").insert([
-        {
-            user_id: currentUser.id,
-            minutes,
-            mode,
-            started_at: new Date().toISOString()
-        }
-    ]);
-
-    console.log("🔥 Focus session saved:", minutes, "mins");
+  if (upsertError) {
+    console.error("❌ daily_stats upsert failed:", upsertError);
+  } else {
+    console.log("✅ daily_stats updated:", updated);
+  }
 }
 
-window.syncDailyStats = syncDailyStats;
-window.saveFocusSession = saveFocusSession;
+window.saveDailyStats = saveDailyStats;
 
 // ================================
 //  4) GENERIC HELPERS (PROFILE/SETTINGS)
@@ -266,7 +269,6 @@ function logout() {
 }
 
 function openProfile() {
-    // you can later create profile.html
     window.location.href = "about.html";
 }
 
@@ -277,6 +279,28 @@ function changeAvatar() {
 function openSettings() {
     window.location.href = "settings.html";
 }
+document.addEventListener("DOMContentLoaded", () => {
+  const profileBtn = document.getElementById("profileBtn");
+  const profileMenu = document.getElementById("profileMenu");
+
+  if (!profileBtn || !profileMenu) return;
+
+  // Toggle menu on click
+  profileBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // 🔥 VERY IMPORTANT
+    profileMenu.classList.toggle("show");
+  });
+
+  // Close when clicking outside
+  document.addEventListener("click", () => {
+    profileMenu.classList.remove("show");
+  });
+
+  // Prevent menu clicks from closing it
+  profileMenu.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+});
 
 window.logout = logout;
 window.openProfile = openProfile;

@@ -1,6 +1,10 @@
 /* ===============================
    TIMER VARIABLES
 ================================*/
+console.log("🧪 DEBUG START");
+console.log("currentUser:", window.currentUser);
+console.log("sb exists:", !!window.sb);
+
 let totalSeconds = 1500;
 let remaining = totalSeconds;
 let timer = null;
@@ -91,7 +95,7 @@ function lockPresets(lock) {
 function startTimer() {
     if (timer) clearInterval(timer);
     running = true;
-
+    
     // 🔊 Sound Effect
     if(window.synth) window.synth.click();
 
@@ -104,7 +108,7 @@ function startTimer() {
     if(window.lucide) lucide.createIcons();
 
     timer = setInterval(() => {
-        // Warning sound at 10s (standard beep logic)
+        // Warning sound at 10s
         let alertThreshold = totalSeconds <= 30 ? 5 : 10;
 
         if (remaining <= alertThreshold && remaining > 0) {
@@ -116,7 +120,7 @@ function startTimer() {
 
         // Timer Finish Logic
         if (remaining <= 0) {
-            finishTimer(); // 👈 Calls the new function below
+            finishTimer(); 
             return;
         }
 
@@ -127,20 +131,28 @@ function startTimer() {
 }
 
 /* ===============================
-   🏁 FINISH TIMER (New Function)
+   🏁 FINISH TIMER (Fixed)
 ================================*/
 function finishTimer() {
+    console.log("🔥 finishTimer() called");
+
+    // FIX 1: Convert seconds to minutes for DB
+    const minutesCompleted = Math.floor(totalSeconds / 60);
+
+    // FIX 2: Call the global function with correct key 'focusMinutes'
+    if (window.saveDailyStats) {
+        window.saveDailyStats({ focusMinutes: minutesCompleted });
+    }
+
     clearInterval(timer);
     running = false;
     stopBeep();
     
-    // 🔊 PLAY SUCCESS CHORD (Procedural Audio)
+    // 🔊 PLAY SUCCESS CHORD
     if(window.synth) window.synth.success();
-
     vibrate([200, 100, 200]);
 
-    // Save Stats
-    const minutesCompleted = Math.floor(totalSeconds / 60);
+    // Local Storage Backup
     const currentTotal = parseInt(localStorage.getItem("focus-minutes") || 0);
     localStorage.setItem("focus-minutes", currentTotal + minutesCompleted);
 
@@ -154,36 +166,6 @@ function finishTimer() {
     setTimeout(() => {
         alert("🔥 Core Stabilized! Focus Session Complete.");
     }, 500);
-    async function saveFocusSession(minutes) {
-    if(!currentUser) return;
-
-    // 1. Log the individual session (For Graphs)
-    await sb.from('focus_sessions').insert({
-        user_id: currentUser.id,
-        duration_minutes: minutes,
-        session_type: 'focus'
-    });
-
-    // 2. Update Total Stats (Aggregated)
-    // First get current totals
-    const { data: current } = await sb.from('user_stats')
-        .select('total_focus_minutes, total_xp')
-        .eq('id', currentUser.id)
-        .single();
-    
-    if(current) {
-        const newMins = (current.total_focus_minutes || 0) + minutes;
-        const newXP = (current.total_xp || 0) + (minutes * 10); // 10 XP per minute
-
-        await sb.from('user_stats')
-            .update({ 
-                total_focus_minutes: newMins,
-                total_xp: newXP, 
-                last_active_date: new Date()
-            })
-            .eq('id', currentUser.id);
-    }
-}
 }
 
 /* ===============================
@@ -205,7 +187,7 @@ function pauseTimer() {
    STOP TIMER (ABORT)
 ================================*/
 function fullStop() {
-    // 🔊 Sound Effect (Error tone for abort)
+    // 🔊 Sound Effect
     if(window.synth) window.synth.error();
 
     if(!confirm("⚠️ Abort mission? Progress will be lost.")) return;
@@ -216,7 +198,7 @@ function fullStop() {
 
     remaining = totalSeconds;
     updateUI();
-
+    
     startBtn.innerHTML = `<i data-lucide="zap"></i> <span>Ignite</span>`;
     stopBtn.style.display = "none";
     lockPresets(false);
@@ -270,7 +252,7 @@ document.querySelectorAll(".preset-btn").forEach(btn => {
         if(!isNaN(min)) {
             totalSeconds = min * 60;
             remaining = totalSeconds;
-            resetTimer(); // Reset visual state
+            resetTimer(); 
         }
     };
 });

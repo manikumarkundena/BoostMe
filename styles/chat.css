@@ -594,3 +594,9 @@ button, a, .chip, .nav-item {
   margin-right: 4px;
   color: #ff4e4e;
 }
+.floating-history-btn {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+}

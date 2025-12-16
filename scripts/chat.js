@@ -1,5 +1,5 @@
 /* ===============================
-   BoostMe — chat.js (FINAL)
+   BoostMe — chat.js (FINAL - FIXED)
    Drop-in replacement for your chat.js
 ================================*/
 
@@ -14,11 +14,16 @@
 /* ------------------------------
    CONFIG / GLOBALS
    - Keep this synced with your config.js if needed
-
-
 -------------------------------*/
-
-
+async function waitForUser() {
+  let tries = 0;
+  // Wait up to 3 seconds for auth to hydrate
+  while (!window.currentUser && tries < 30) {
+    await new Promise(r => setTimeout(r, 100));
+    tries++;
+  }
+  return window.currentUser;
+}
 
 const BACKEND_URL = (window.BOOSTME_CONFIG && window.BOOSTME_CONFIG.BACKEND_URL) 
     || "https://boostme-a0ca.onrender.com/api/chat";
@@ -95,11 +100,7 @@ async function callAI(input) {
     try {
         const res = await fetch(BACKEND_URL, {
             method: "POST",
-           headers: {
-  "Content-Type": "application/json",
-  
-},
-
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
         });
 
@@ -471,19 +472,35 @@ function showLinearBarTimer(seconds) {
 /* ===============================
    finishTimer — cleanup + message
 ================================*/
-function finishTimer(seconds) {
+async function finishTimer(seconds) {
     clearExistingTimers();
     addAIBubble(`🔥 Time's up! You nailed that ${seconds}s focus sesh bro!`);
-    challengeLocked = false; // 🔓 UNLOCK ONLY HERE
+    challengeLocked = false;
+
+    // 🔥 SAVE CHALLENGE TIME TO DAILY_STATS
+    if (window.currentUser && window.sb) {
+        const minutes = Math.ceil(seconds / 60);
+        const today = new Date().toISOString().split("T")[0];
+
+        const { error } = await sb.from("daily_stats").upsert({
+            user_id: window.currentUser.id,
+            date: today,
+            challenge_minutes: minutes
+        }, { onConflict: "user_id,date" });
+
+        if (error) console.error("❌ Challenge stats save failed:", error);
+    }
 }
 
 
 /* ===============================
    SEND/MAIN flow (mood -> motivate -> challenge)
-   - keeps DB inserts if currentUser exists
-   - handles language detection before each prompt
+   - FIXED: Proper Supabase awaiting and error logging
+   - FIXED: Uses 'user' variable, not unstable window.currentUser
 ================================*/
 async function sendMessage() {
+    const user = await waitForUser(); // 🔥 IMPORTANT: wait for auth
+
     const input = document.getElementById("userInput");
     if (!input) return;
     const msg = input.value.trim();
@@ -495,75 +512,98 @@ async function sendMessage() {
     const langInfo = getLanguageInfo(msg);
     appLang = langInfo.speechLang || "en-US";
 
-    // Save user message to Supabase if available (preserve your flow)
-    if (window.currentUser && typeof sb !== "undefined") {
-
-        try {
-            sb.from("chat_messages").insert({ user_id: window.currentUser.id
-, sender: "user", message: msg }).catch(()=>{});
-        } catch (e) {}
+    // 1. Save USER message (FIXED)
+    if (user && typeof sb !== "undefined") {
+        const { error } = await sb.from("chat_messages").insert({
+            user_id: user.id, // ✅ Safe ID
+            sender: "user",
+            message: msg
+        });
+        if (error) console.error("❌ Save User Msg Failed:", error);
     }
 
-    // 1) Mood
+    // 2. Mood
     showTyping();
     const mood = await callAI(moodPrompt(msg, langInfo));
     hideTyping();
     addAIBubble(mood || "⚠️ AI Error");
 
-   if (window.currentUser && typeof sb !== "undefined") {
-
-        try { sb.from("chat_messages").insert({ user_id: window.currentUser.id
-, sender: "ai", message: mood || "" }).catch(()=>{}); } catch(e){}
+    if (user && typeof sb !== "undefined") {
+        const { error } = await sb.from("chat_messages").insert({
+            user_id: user.id, // ✅ Safe ID
+            sender: "ai",
+            message: mood || ""
+        });
+        if (error) console.error("❌ Save Mood Failed:", error);
     }
 
-    // 2) Motivation
+    // 3. Motivation
     showTyping();
     const motivate = await callAI(motivatePrompt(msg, langInfo));
     hideTyping();
     addAIBubble(motivate || "⚠️ AI Error");
 
-    if (window.currentUser && typeof sb !== "undefined") {
-
-        try { sb.from("chat_messages").insert({ user_id: window.currentUser.id
-, sender: "ai", message: motivate || "" }).catch(()=>{}); } catch(e){}
+    if (user && typeof sb !== "undefined") {
+        const { error } = await sb.from("chat_messages").insert({
+            user_id: user.id, // ✅ Safe ID
+            sender: "ai",
+            message: motivate || ""
+        });
+        if (error) console.error("❌ Save Motivation Failed:", error);
     }
 
-    // 3) Challenge — create card (prevents duplicates inside createChallengeCard)
+    // 4. Challenge — create card
     showTyping();
     const challenge = await callAI(challengePrompt(langInfo));
     hideTyping();
     createChallengeCard(challenge || "Take 3 slow deep breaths.");
 
-    if (window.currentUser && typeof sb !== "undefined") {
-
-        try { sb.from("chat_messages").insert({ user_id: window.currentUser.id
-, sender: "ai", message: challenge || "" }).catch(()=>{}); } catch(e){}
+    if (user && typeof sb !== "undefined") {
+        const { error } = await sb.from("chat_messages").insert({
+            user_id: user.id, // ✅ Safe ID
+            sender: "ai",
+            message: challenge || ""
+        });
+        if (error) console.error("❌ Save Challenge Failed:", error);
     }
 }
 
 /* ===============================
    Manual challenge invoker (floating quick button)
-   - obeys duplicate-prevention
+   - FIXED: Added waitForUser() and proper DB saving
 ================================*/
 async function manualChallenge() {
     if (challengeLocked) {
         addAIBubble("⚠️ A challenge is already running. Finish it before starting another.");
         return;
     }
+    
+    // 🔥 Added auth wait here too
+    const user = await waitForUser();
+
     showTyping();
     // default language: english buddy
     const langInfo = { instruction: "Reply in casual modern English, friendly buddy.", speechLang: "en-US", code: "en" };
     const ch = await callAI(challengePrompt(langInfo));
     hideTyping();
+    
     createChallengeCard(ch || "Do 10 seconds stretch.");
-    if (window.currentUser && typeof sb !== "undefined") {
 
-        try { sb.from("chat_messages").insert({ user_id: window.currentUser.id, sender: "ai", message: ch || "" }).catch(()=>{}); } catch(e){}
+    // FIXED: Save manual challenge to DB
+    if (user && typeof sb !== "undefined") {
+        const { error } = await sb.from("chat_messages").insert({
+            user_id: user.id, 
+            sender: "ai", 
+            message: ch || "" 
+        });
+        if (error) console.error("❌ Save Manual Challenge Failed:", error);
     }
 }
 
 /* ===============================
-   CHAT HISTORY modal + clear (keeps existing functions)
+   CHAT HISTORY modal + clear
+   - FIXED: Replaced 'currentUser' with 'window.currentUser'
+   - FIXED: Better error alerting
 ================================*/
 const historyBtn = document.getElementById("historyBtn");
 const historyModal = document.getElementById("historyModal");
@@ -575,7 +615,8 @@ function openHistory() { historyModal && historyModal.classList.add("active"); }
 function closeHistory() { historyModal && historyModal.classList.remove("active"); }
 
 async function loadChatHistoryModal() {
-    if (!currentUser) {
+    // FIXED: Use window.currentUser
+    if (!window.currentUser) {
         alert("Login to view chat history!");
         return;
     }
@@ -585,7 +626,14 @@ async function loadChatHistoryModal() {
     openHistory();
 
     try {
-        const { data, error } = await sb.from("chat_messages").select("*").eq("user_id", currentUser.id).order("id", { ascending: true });
+        // FIXED: Use window.currentUser.id
+        const { data, error } = await sb.from("chat_messages")
+            .select("*")
+            .eq("user_id", window.currentUser.id)
+            .order("id", { ascending: true });
+        
+        if (error) throw error;
+
         if (!data || data.length === 0) {
             historyList.innerHTML = `<div class="history-item">No past messages 😶</div>`;
             return;
@@ -617,18 +665,21 @@ async function loadChatHistoryModal() {
         });
     } catch (e) {
         historyList.innerHTML = `<div class="history-item">Failed to load history.</div>`;
-        console.error(e);
+        console.error("History load error:", e);
     }
 }
 
 clearHistoryBtn && (clearHistoryBtn.onclick = async () => {
     if (!confirm("Delete ALL your chat history?")) return;
-    if (!currentUser) return;
+    // FIXED: Use window.currentUser
+    if (!window.currentUser) return;
     try {
-        await sb.from("chat_messages").delete().eq("user_id", currentUser.id);
+        const { error } = await sb.from("chat_messages").delete().eq("user_id", window.currentUser.id);
+        if (error) throw error;
         historyList.innerHTML = `<div class="history-item">History cleared 🧹</div>`;
     } catch (e) {
         console.error("clear history failed", e);
+        alert("Failed to clear history. See console.");
     }
 });
 
@@ -667,6 +718,7 @@ if (voiceBtn && ("webkitSpeechRecognition" in window)) {
    INIT / EVENT BINDINGS
 ================================*/
 function initChat() {
+    
     const sendBtn = document.getElementById("sendBtn");
     const userInput = document.getElementById("userInput");
 
@@ -695,6 +747,14 @@ function initChat() {
     if (quick) quick.onclick = manualChallenge;
 
     console.log("✅ Chat initialized");
+    const historyBtn = document.getElementById("historyBtn");
+if (historyBtn) {
+    historyBtn.onclick = loadChatHistoryModal;
+    console.log("✅ History button bound");
+} else {
+    console.warn("❌ historyBtn not found in DOM");
+}
+
 }
 
 // 🔥 IMPORTANT: run AFTER navbar & auth

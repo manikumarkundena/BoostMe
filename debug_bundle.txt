@@ -1,0 +1,962 @@
+===== SUPABASE.JS =====
+// ================================
+//  SUPABASE CLIENT SETUP
+// ================================
+const SUPABASE_URL = "https://iygvxqkzdpmelgzggvio.supabase.co"; // your URL
+const SUPABASE_KEY = "sb_publishable_kvcj_5TVeYRkxujDoG8lhw_OcZRbPYz"; // anon key only
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+window.sb = sb; // so other scripts can use sb
+let currentUser = null;
+window.currentUser = null;
+
+// ================================
+//  1) AUTH MODAL (MAGIC LINK LOGIN)
+// ================================
+function openAuth() {
+    const modal = document.getElementById("authModal");
+    if (modal) {
+        modal.style.display = "flex";
+        setTimeout(() => modal.classList.add("active"), 10);
+    }
+}
+
+function closeAuth() {
+    const modal = document.getElementById("authModal");
+    if (modal) {
+        modal.classList.remove("active");
+        setTimeout(() => (modal.style.display = "none"), 300);
+    }
+}
+
+async function handleMagicLogin() {
+    const emailEl = document.getElementById("emailInput");
+    if (!emailEl) return;
+
+    const email = emailEl.value.trim();
+    if (!email.includes("@")) {
+        alert("Please enter a valid email!");
+        return;
+    }
+
+    const btn = document.querySelector(".magic-btn");
+    if (!btn) return;
+
+    const originalText = btn.innerText;
+    btn.innerText = "✨ Sending...";
+    btn.disabled = true;
+
+    const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.href }
+    });
+
+    if (error) {
+        alert("Error: " + error.message);
+        btn.innerText = originalText;
+        btn.disabled = false;
+    } else {
+        btn.innerHTML = "✅ Check your Inbox!";
+        setTimeout(() => {
+            closeAuth();
+            alert("We sent a magic link to " + email + ". Click it to login!");
+        }, 1500);
+    }
+}
+
+// Expose these globally if you call from HTML
+window.openAuth = openAuth;
+window.closeAuth = closeAuth;
+window.handleMagicLogin = handleMagicLogin;
+
+// ================================
+//  2) USER + HEADER UI HANDLING
+// ================================
+async function ensureProfileRow(user) {
+    if (!user) return;
+
+    const { data, error } = await sb
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .single();
+
+    if (error && error.code !== "PGRST116") {
+        console.log("Profile fetch error:", error);
+        return;
+    }
+
+    if (!data) {
+        await sb.from("profiles").insert({
+            id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || null,
+            avatar_url:
+                user.user_metadata?.avatar_url ||
+                `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(
+                    user.email || "BoostUser"
+                )}`
+        });
+    }
+}
+
+// Called on page load & on auth state change
+async function checkUser() {
+    const {
+        data: { session }
+    } = await sb.auth.getSession();
+
+    currentUser = session?.user || null;
+    window.currentUser = currentUser;
+
+    const loginBtn = document.getElementById("loginBtn");
+    const profileWrapper = document.getElementById("profileDropdown");
+    const profileAvatar = document.getElementById("profileAvatar");
+    const authArea = document.getElementById("authArea"); // optional container in some pages
+
+    if (currentUser) {
+        await ensureProfileRow(currentUser);
+
+        // Avatar from auth metadata or default
+        const meta = currentUser.user_metadata || {};
+        const avatarUrl =
+            meta.avatar_url ||
+            `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(
+                currentUser.email || "BoostUser"
+            )}`;
+
+        // Top-right login/profile (home.html etc.)
+        if (loginBtn) loginBtn.style.display = "none";
+        if (profileWrapper) profileWrapper.style.display = "flex";
+        if (profileAvatar) profileAvatar.src = avatarUrl;
+
+        // Optional generic auth area (if you use it somewhere)
+        if (authArea) {
+            authArea.innerHTML = `
+                <div class="profile-wrapper" id="profileDropdown">
+                    <img src="${avatarUrl}" class="profile-avatar" id="profileBtn">
+                    <div class="profile-menu" id="profileMenu">
+                        <button onclick="openProfile()">View Profile</button>
+                        <button onclick="changeAvatar()">Change Avatar</button>
+                        <button onclick="openSettings()">Settings</button>
+                        <button onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            `;
+
+            const profileBtn = document.getElementById("profileBtn");
+            const profileMenu = document.getElementById("profileMenu");
+            if (profileBtn && profileMenu) {
+                profileBtn.onclick = () => {
+                    profileMenu.classList.toggle("show");
+                };
+            }
+        }
+    } else {
+        // Not logged in
+        if (loginBtn) loginBtn.style.display = "flex";
+        if (profileWrapper) profileWrapper.style.display = "none";
+
+        if (authArea) {
+            authArea.innerHTML = `
+                <a href="login.html" class="primary-btn" style="padding:8px 16px;">Login</a>
+            `;
+        }
+    }
+}
+
+// Listen for auth changes & re-run checkUser
+sb.auth.onAuthStateChange((_event, _session) => {
+    checkUser();
+});
+
+// Run on first load
+document.addEventListener("DOMContentLoaded", checkUser);
+
+// ================================
+//  3) DASHBOARD / CLOUD STATS
+// ================================
+async function syncDailyStats() {
+    if (!currentUser) return;
+
+    const today = new Date().toISOString().split("T")[0];
+
+    let { data, error } = await sb
+        .from("daily_stats")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .eq("date", today)
+        .single();
+
+    if (error && error.code !== "PGRST116") {
+        console.log("daily_stats fetch error:", error);
+        return;
+    }
+
+    if (!data) {
+        await sb.from("daily_stats").insert([
+            {
+                user_id: currentUser.id,
+                date: today,
+                focus_minutes: 0,
+                completed_tasks: 0,
+                chats: 0,
+                mood_score: null
+            }
+        ]);
+    } else {
+        console.log("Cloud daily_stats:", data);
+    }
+}
+
+// Call this from focus.js when a focus session completes
+async function saveDailyStats({
+  focusMinutes = 0,
+  challengeMinutes = 0,
+  gamesPlayed = 0,
+  completedTasks = 0,
+  chats = 0,
+  challengesCompleted = 0,
+  moodScore = null
+}) {
+  if (!currentUser) return;
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const { data, error } = await sb
+    .from("daily_stats")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .eq("date", today)
+    .maybeSingle();
+
+  if (error) {
+    console.error("❌ daily_stats fetch error:", error);
+    return;
+  }
+
+  const updated = {
+    user_id: currentUser.id,
+    date: today,
+    focus_minutes: (data?.focus_minutes || 0) + focusMinutes,
+    challenge_minutes: (data?.challenge_minutes || 0) + challengeMinutes,
+    games_played: (data?.games_played || 0) + gamesPlayed,
+    completed_tasks: (data?.completed_tasks || 0) + completedTasks,
+    chats: (data?.chats || 0) + chats,
+    challenges_completed: (data?.challenges_completed || 0) + challengesCompleted,
+    mood_score: moodScore ?? data?.mood_score ?? null
+  };
+
+  const { error: upsertError } = await sb
+    .from("daily_stats")
+    .upsert(updated, { onConflict: "user_id,date" });
+
+  if (upsertError) {
+    console.error("❌ daily_stats upsert failed:", upsertError);
+  } else {
+    console.log("✅ daily_stats updated:", updated);
+  }
+}
+
+window.saveDailyStats = saveDailyStats;
+
+
+// ================================
+//  4) GENERIC HELPERS (PROFILE/SETTINGS)
+// ================================
+function logout() {
+    sb.auth.signOut();
+    window.location.href = "home.html";
+}
+
+function openProfile() {
+    // you can later create profile.html
+    window.location.href = "about.html";
+}
+
+function changeAvatar() {
+    window.location.href = "avatar.html";
+}
+
+function openSettings() {
+    window.location.href = "settings.html";
+}
+
+window.logout = logout;
+window.openProfile = openProfile;
+window.changeAvatar = changeAvatar;
+window.openSettings = openSettings;
+\n\n===== CHILL.JS =====
+console.log("Chill Zone Loaded 🌿");
+
+/* ===============================
+   STATE & DOM ELEMENTS
+================================= */
+const breatheUI = document.getElementById("breatheUI");
+const popUI = document.getElementById("popUI");
+const fireUI = document.getElementById("fireUI");
+const breatheText = document.getElementById("breatheText");
+const cards = document.querySelectorAll(".chill-card");
+
+// AUDIO ELEMENTS (Streaming Music)
+const lofiAudio = document.getElementById("lofiMusic");
+
+/* ===============================
+   SWITCHER LOGIC
+================================= */
+function switchMode(mode) {
+    // 1. Hide All Sections
+    if(breatheUI) breatheUI.style.display = "none";
+    if(popUI) popUI.style.display = "none";
+    if(fireUI) fireUI.style.display = "none";
+
+    // 2. Stop Other Audio/Timers
+    stopBreathingText();
+    stopFireSound();
+
+    // 3. Show Selected & Init Logic
+    if (mode === 'breathe') {
+        breatheUI.style.display = "flex";
+        breatheUI.style.flexDirection = "column";
+        startBreathingText();
+    } 
+    else if (mode === 'pop') {
+        popUI.style.display = "flex";
+        popUI.style.flexDirection = "column";
+    } 
+    else if (mode === 'fire') {
+        fireUI.style.display = "flex";
+        fireUI.style.flexDirection = "column";
+        // Ambient fire crackle via synth (simulated noise) or just silence
+    }
+
+    // 4. Update Visual Active State
+    cards.forEach(c => c.classList.remove("active-mode"));
+    
+    // Highlight correct card (Indices: 0=Breathe, 1=Pop, 3=Fire)
+    if(mode === 'breathe' && cards[0]) cards[0].classList.add("active-mode");
+    if(mode === 'pop' && cards[1]) cards[1].classList.add("active-mode");
+    if(mode === 'fire' && cards[3]) cards[3].classList.add("active-mode");
+    
+    // Play Click Sound
+    if(window.synth) window.synth.click();
+}
+
+/* ===============================
+   1. BREATHING LOGIC (4-7-8)
+================================= */
+let breatheInterval;
+
+function startBreathingText() {
+    updateText();
+    // 8s cycle (4s inhale/hold + 4s exhale)
+    breatheInterval = setInterval(updateText, 8000); 
+}
+
+function updateText() {
+    // INHALE
+    if(breatheText) {
+        breatheText.innerText = "Inhale";
+        breatheText.style.transform = "scale(1.5)";
+        breatheText.style.opacity = "1";
+    }
+
+    // HOLD (at 4s)
+    setTimeout(() => {
+        if(breatheText) {
+            breatheText.innerText = "Hold";
+        }
+    }, 4000);
+
+    // EXHALE (at 6s) - Modified timing for better feel
+    setTimeout(() => {
+        if(breatheText) {
+            breatheText.innerText = "Exhale";
+            breatheText.style.transform = "scale(1)";
+            breatheText.style.opacity = "0.7";
+        }
+    }, 5500);
+}
+
+function stopBreathingText() {
+    if (breatheInterval) clearInterval(breatheInterval);
+    if (breatheText) breatheText.innerText = "Ready";
+}
+
+/* ===============================
+   2. BUBBLE WRAP LOGIC + SOUND 🫧
+================================= */
+const bubbleGrid = document.getElementById("bubbleGrid");
+
+// 🆕 Mood Boost Emojis
+const POP_EMOJIS = ["✨", "💖", "🔥", "🍀", "💎", "🌟", "💜", "🚀", "😊", "🎵"];
+
+function initBubbles() {
+    if(!bubbleGrid) return;
+    bubbleGrid.innerHTML = "";
+    
+    // Create 25 Bubbles
+    for (let i = 0; i < 25; i++) { 
+        const b = document.createElement("div");
+        b.className = "bubble";
+        
+        // 🆕 Add a hidden emoji inside
+        const randomEmoji = POP_EMOJIS[Math.floor(Math.random() * POP_EMOJIS.length)];
+        b.innerHTML = `<span class="pop-content">${randomEmoji}</span>`;
+        
+        b.onclick = () => popBubble(b);
+        bubbleGrid.appendChild(b);
+    }
+}
+
+function popBubble(el) {
+    if (el.classList.contains("popped")) return;
+    
+    el.classList.add("popped");
+    
+    // 🔊 1. PLAY POP SOUND
+    if(window.synth) window.synth.pop();
+    
+    // Haptics
+    if (navigator.vibrate) navigator.vibrate(15);
+
+    // CHECK WIN CONDITION
+    checkAllPopped();
+    
+    // 🆕 Update Stress Label dynamically
+    const remaining = document.querySelectorAll(".bubble:not(.popped)").length;
+    const label = document.getElementById("stressLabel");
+    
+    if(label) {
+        if(remaining > 15) label.innerText = "Stress Level: High 😤";
+        else if(remaining > 5) label.innerText = "Stress Level: Dropping... 📉";
+        else if(remaining > 0) label.innerText = "Stress Level: Almost Gone 🍃";
+        else label.innerText = "Stress Level: Zero! 🧘‍♂️";
+    }
+}
+
+function checkAllPopped() {
+    const remaining = document.querySelectorAll(".bubble:not(.popped)").length;
+    
+    if (remaining === 0) {
+        // 🎉 ALL POPPED! - COMPLETION POINT 1
+        // ✅ CALL GLOBAL HELPER FROM supabase.js
+        if (window.saveDailyStats) window.saveDailyStats({ gamesPlayed: 1 });
+
+        setTimeout(() => {
+            // 🔊 2. PLAY SUCCESS SOUND
+            if(window.synth) window.synth.success();
+            if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+            
+            // Visual feedback
+            const btn = document.querySelector("#popUI .text-btn");
+            if(btn) btn.innerText = "Nice Job! Resetting... 🎉";
+            
+            // Auto Reset after 1.5s
+            setTimeout(() => {
+                resetBubbles();
+                if(btn) btn.innerText = "Reset Sheet 🔄";
+            }, 1500);
+            
+        }, 300);
+    }
+}
+
+function resetBubbles() {
+    const bubbles = document.querySelectorAll(".bubble");
+    
+    // Staggered reset animation
+    bubbles.forEach((b, index) => {
+        setTimeout(() => {
+            b.classList.remove("popped");
+            // Tiny sound for mechanical reset feel
+            if(window.synth && index % 5 === 0) window.synth.hover(); 
+        }, index * 20); // Wave effect
+    });
+}
+
+/* ===============================
+   3. LO-FI MUSIC TOGGLE
+================================= */
+let isMusicPlaying = false;
+
+function toggleMusic(card) {
+    if (isMusicPlaying) {
+        // Stop Music
+        if(lofiAudio) {
+            lofiAudio.pause();
+            lofiAudio.src = lofiAudio.src; // Disconnect stream to save data
+        }
+        card.classList.remove("playing");
+    } else {
+        // Start Music
+        if(lofiAudio) {
+            // Reload src to ensure stream is live
+            const currentSrc = lofiAudio.querySelector('source').src;
+            lofiAudio.src = currentSrc; 
+            lofiAudio.volume = 0.5;
+            lofiAudio.play().catch(e => alert("Tap again to play (Browser blocked auto-audio)"));
+        }
+        card.classList.add("playing");
+        
+        // 🔊 Sound Effect
+        if(window.synth) window.synth.click();
+    }
+    isMusicPlaying = !isMusicPlaying;
+}
+
+/* ===============================
+   4. BONFIRE LOGIC
+================================= */
+const ventInput = document.getElementById("ventText");
+const inputArea = document.getElementById("ventInputArea");
+const postBurnMsg = document.getElementById("postBurnMsg");
+
+const WISDOM_QUOTES = [
+    "Let it go. You are doing your best.",
+    "Breathe. This is just a moment.",
+    "Release the weight. You are free now.",
+    "Peace comes from within.",
+    "New beginnings are often disguised as painful endings."
+];
+
+function stopFireSound() {
+    // If you add a fire loop later, stop it here
+}
+
+function burnStress() {
+    if (!ventInput.value.trim()) {
+        alert("Write something to burn first!");
+        return;
+    }
+
+    // 🔊 Sound Effect
+    if(window.synth) window.synth.click();
+
+    ventInput.classList.add("burning");
+
+    // Wait for animation
+    setTimeout(() => {
+        if(inputArea) inputArea.style.display = "none";
+        
+        const quote = WISDOM_QUOTES[Math.floor(Math.random() * WISDOM_QUOTES.length)];
+        
+        if(postBurnMsg) {
+            postBurnMsg.innerHTML = `
+                <span>"${quote}"</span><br><br>
+                <button class="text-btn" onclick="resetFire()">Vent More</button>
+            `;
+            postBurnMsg.style.display = "block";
+            
+            // 🔊 Success Sound for relief
+            if(window.synth) window.synth.success();
+        }
+
+        ventInput.value = "";
+        ventInput.classList.remove("burning");
+        
+        if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+        
+        // 🔥 BURN COMPLETE - COMPLETION POINT 2
+        // ✅ CALL GLOBAL HELPER FROM supabase.js
+        if (window.saveDailyStats) window.saveDailyStats({ gamesPlayed: 1 });
+        
+    }, 800);
+}
+
+function resetFire() {
+    if(postBurnMsg) postBurnMsg.style.display = "none";
+    if(inputArea) inputArea.style.display = "block";
+    if(window.synth) window.synth.click();
+}
+
+/* ===============================
+   INIT
+================================= */
+document.addEventListener("DOMContentLoaded", () => {
+    initBubbles();
+    // Start on Breathe mode by default
+    switchMode('breathe'); 
+});\n\n===== FOCUS.JS =====
+/* ===============================
+   TIMER VARIABLES
+================================*/
+console.log("🧪 DEBUG START");
+console.log("currentUser:", window.currentUser);
+console.log("sb exists:", !!window.sb);
+
+
+let totalSeconds = 1500;
+let remaining = totalSeconds;
+let timer = null;
+let running = false;
+
+/* ===============================
+   DOM ELEMENTS
+================================*/
+const ring = document.getElementById("timerRing");
+const valueEl = document.getElementById("timerValue");
+const startBtn = document.getElementById("focusStartBtn");
+const resetBtn = document.getElementById("focusResetBtn");
+const stopBtn = document.getElementById("focusStopBtn");
+const alertSound = document.getElementById("alertSound");
+const portalContainer = document.getElementById("portalContainer");
+
+/* ===============================
+   AUDIO HELPERS
+================================*/
+function stopBeep() {
+    if(alertSound) {
+        alertSound.pause();
+        alertSound.currentTime = 0;
+    }
+}
+
+function vibrate(ms) {
+    if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+/* ===============================
+   UPDATE UI (HUD & COLORS)
+================================*/
+function updateUI() {
+    let m = String(Math.floor(remaining / 60)).padStart(2, "0");
+    let s = String(remaining % 60).padStart(2, "0");
+
+    // Update Text
+    if(valueEl) valueEl.innerText = `${m}:${s}`;
+
+    // Calculate Progress
+    let progress = ((totalSeconds - remaining) / totalSeconds) * 360;
+    let percentLeft = (remaining / totalSeconds) * 100;
+
+    // 🎨 DYNAMIC COLOR LOGIC
+    let newColor = "#6c63ff"; // Default Blue
+
+    if (percentLeft <= 10) {
+        newColor = "#ff4e4e"; // Red (Critical)
+    } else if (percentLeft <= 30) {
+        newColor = "#ff9f3f"; // Orange (Warning)
+    } else if (percentLeft <= 60) {
+        newColor = "#ffd54a"; // Yellow (Caution)
+    }
+
+    // Apply color to CSS Variable
+    if(portalContainer) {
+        portalContainer.style.setProperty('--ring-color', newColor);
+    }
+
+    // Update Ring Gradient
+    if(ring) {
+        ring.style.background = 
+            `conic-gradient(var(--ring-color) ${progress}deg, transparent 0deg)`;
+    }
+}
+
+/* ===============================
+   LOCK PRESETS
+================================*/
+function lockPresets(lock) {
+    document.querySelectorAll(".preset-btn").forEach(btn => {
+        if (lock) {
+            btn.classList.add("disabled");
+            btn.disabled = true;
+            btn.style.opacity = "0.5";
+        } else {
+            btn.classList.remove("disabled");
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        }
+    });
+}
+
+/* ===============================
+   START TIMER
+================================*/
+function startTimer() {
+    if (timer) clearInterval(timer);
+    running = true;
+
+    // 🔊 Sound Effect
+    if(window.synth) window.synth.click();
+
+    // UI Updates
+    startBtn.innerHTML = `<i data-lucide="pause"></i> <span>Pause</span>`;
+    stopBtn.style.display = "flex"; 
+    lockPresets(true);
+    
+    // Refresh Icons
+    if(window.lucide) lucide.createIcons();
+
+    timer = setInterval(() => {
+        // Warning sound at 10s (standard beep logic)
+        let alertThreshold = totalSeconds <= 30 ? 5 : 10;
+
+        if (remaining <= alertThreshold && remaining > 0) {
+            if(alertSound) alertSound.play().catch(() => {});
+            vibrate(80);
+        } else {
+            stopBeep();
+        }
+
+        // Timer Finish Logic
+        if (remaining <= 0) {
+            finishTimer(); // 👈 Calls the new function below
+            return;
+        }
+
+        remaining--;
+        updateUI();
+
+    }, 1000);
+}
+
+/* ===============================
+   🏁 FINISH TIMER (New Function)
+================================*/
+function finishTimer() {
+    console.log("🔥 finishTimer() called");
+    saveDailyStats({ focusSeconds: totalSeconds });
+
+    clearInterval(timer);
+    running = false;
+    stopBeep();
+    
+    // 🔊 PLAY SUCCESS CHORD (Procedural Audio)
+    if(window.synth) window.synth.success();
+
+    vibrate([200, 100, 200]);
+
+    // Save Stats
+    const minutesCompleted = Math.floor(totalSeconds / 60);
+    const currentTotal = parseInt(localStorage.getItem("focus-minutes") || 0);
+    localStorage.setItem("focus-minutes", currentTotal + minutesCompleted);
+
+    // Reset UI
+    startBtn.innerHTML = `<i data-lucide="zap"></i> <span>Ignite</span>`;
+    stopBtn.style.display = "none";
+    lockPresets(false);
+    if(window.lucide) lucide.createIcons();
+
+    // Small delay for alert so sound plays first
+    setTimeout(() => {
+        alert("🔥 Core Stabilized! Focus Session Complete.");
+    }, 500);
+    async function saveFocusSession(minutes) {
+    if(!currentUser) return;
+
+    // 1. Log the individual session (For Graphs)
+    await sb.from('focus_sessions').insert({
+        user_id: currentUser.id,
+        duration_minutes: minutes,
+        session_type: 'focus'
+    });
+
+    // 2. Update Total Stats (Aggregated)
+    // First get current totals
+    const { data: current } = await sb.from('user_stats')
+        .select('total_focus_minutes, total_xp')
+        .eq('id', currentUser.id)
+        .single();
+    
+    if(current) {
+        const newMins = (current.total_focus_minutes || 0) + minutes;
+        const newXP = (current.total_xp || 0) + (minutes * 10); // 10 XP per minute
+
+        await sb.from('user_stats')
+            .update({ 
+                total_focus_minutes: newMins,
+                total_xp: newXP, 
+                last_active_date: new Date()
+            })
+            .eq('id', currentUser.id);
+    }
+    // 🔹 ADD THIS: Save to Supabase (uses the global totalSeconds variable)
+    saveFocusSeconds(totalSeconds);
+
+    // Reset UI
+    startBtn.innerHTML = `<i data-lucide="zap"></i> <span>Ignite</span>`;
+    stopBtn.style.display = "none";
+    lockPresets(false);
+    if(window.lucide) lucide.createIcons();
+
+    // Small delay for alert so sound plays first
+    setTimeout(() => {
+        alert("🔥 Core Stabilized! Focus Session Complete.");
+    }, 500);
+}
+}
+
+/* ===============================
+   PAUSE TIMER
+================================*/
+function pauseTimer() {
+    running = false;
+    clearInterval(timer);
+    stopBeep();
+    
+    // 🔊 Sound Effect
+    if(window.synth) window.synth.click();
+
+    startBtn.innerHTML = `<i data-lucide="play"></i> <span>Resume</span>`;
+    if(window.lucide) lucide.createIcons();
+}
+
+/* ===============================
+   STOP TIMER (ABORT)
+================================*/
+function fullStop() {
+    // 🔊 Sound Effect (Error tone for abort)
+    if(window.synth) window.synth.error();
+
+    if(!confirm("⚠️ Abort mission? Progress will be lost.")) return;
+
+    running = false;
+    clearInterval(timer);
+    stopBeep();
+
+    remaining = totalSeconds;
+    updateUI();
+
+    startBtn.innerHTML = `<i data-lucide="zap"></i> <span>Ignite</span>`;
+    stopBtn.style.display = "none";
+    lockPresets(false);
+    if(window.lucide) lucide.createIcons();
+}
+
+/* ===============================
+   RESET TIMER
+================================*/
+function resetTimer() {
+    // 🔊 Sound Effect
+    if(window.synth) window.synth.click();
+
+    running = false;
+    clearInterval(timer);
+    stopBeep();
+
+    remaining = totalSeconds;
+
+    startBtn.innerHTML = `<i data-lucide="zap"></i> <span>Ignite</span>`;
+    stopBtn.style.display = "none";
+    lockPresets(false);
+    updateUI();
+    if(window.lucide) lucide.createIcons();
+}
+
+/* ===============================
+   EVENT LISTENERS
+================================*/
+if(startBtn) startBtn.onclick = () => running ? pauseTimer() : startTimer();
+if(resetBtn) resetBtn.onclick = resetTimer;
+if(stopBtn) stopBtn.onclick = fullStop;
+
+/* Presets */
+document.querySelectorAll(".preset-btn").forEach(btn => {
+    btn.onclick = () => {
+        if (running) return;
+        
+        // 🔊 Sound Effect
+        if(window.synth) window.synth.click();
+
+        if (btn.classList.contains("custom-btn")) {
+            const inputDiv = document.getElementById("inlineCustomInput");
+            inputDiv.style.display = (inputDiv.style.display === "flex") ? "none" : "flex";
+            return;
+        }
+
+        document.getElementById("inlineCustomInput").style.display = "none";
+        
+        let min = parseInt(btn.innerText);
+        if(!isNaN(min)) {
+            totalSeconds = min * 60;
+            remaining = totalSeconds;
+            resetTimer(); // Reset visual state
+        }
+    };
+});
+
+/* Custom Input */
+const applyBtn = document.getElementById("inlineCustomApply");
+if(applyBtn) {
+    applyBtn.onclick = () => {
+        if (running) return;
+
+        // 🔊 Sound Effect
+        if(window.synth) window.synth.click();
+
+        const val = parseInt(document.getElementById("inlineCustomMin").value);
+        if (!val || val < 1) return;
+        
+        totalSeconds = val * 60;
+        remaining = totalSeconds;
+        
+        document.getElementById("inlineCustomInput").style.display = "none";
+        resetTimer();
+    };
+}
+
+/* INIT */
+updateUI();
+
+/* ===============================
+   🔹 NEW SUPABASE HELPER
+================================*/
+async function saveFocusSeconds(seconds) {
+    // 1. Safety Check: Ensure User & Supabase exist
+    if (!window.currentUser || !window.sb) return;
+
+    try {
+        // 2. Get today's date in YYYY-MM-DD (Local Time)
+        const today = new Date().toLocaleDateString('en-CA');
+        const userId = window.currentUser.id;
+
+        // 3. Fetch existing data for today
+        const { data: currentData, error: fetchError } = await window.sb
+            .from('daily_stats')
+            .select('focus_seconds')
+            .eq('user_id', userId)
+            .eq('date', today)
+            .maybeSingle();
+
+        if (fetchError) throw fetchError;
+
+        // 4. Calculate new total
+        const previousSeconds = currentData ? currentData.focus_seconds : 0;
+        const newTotal = previousSeconds + seconds;
+
+        // 5. Upsert (Insert or Update)
+        const { error: upsertError } = await window.sb
+            .from('daily_stats')
+            .upsert({
+                user_id: userId,
+                date: today,
+                focus_seconds: newTotal
+            }, { onConflict: 'user_id, date' });
+
+        if (upsertError) throw upsertError;
+        
+        console.log(`✅ Saved ${seconds}s to Supabase. Daily Total: ${newTotal}s`);
+
+    } catch (err) {
+        console.error("❌ Error saving focus stats:", err);
+    }
+}
+________________________________
+
+==========Daily Stats========
+___________________________________
+
+| schemaname | tablename   | policyname             | permissive | roles    | cmd    | qual                   | with_check             |
+| ---------- | ----------- | ---------------------- | ---------- | -------- | ------ | ---------------------- | ---------------------- |
+| public     | daily_stats | Users insert own stats | PERMISSIVE | {public} | INSERT | null                   | (auth.uid() = user_id) |
+| public     | daily_stats | Users see own stats    | PERMISSIVE | {public} | SELECT | (auth.uid() = user_id) | null                   |
+| public     | daily_stats | Users update own stats | PERMISSIVE | {public} | UPDATE | (auth.uid() = user_id) | null                   |
+| public     | daily_stats | daily_stats_insert     | PERMISSIVE | {public} | INSERT | null                   | (auth.uid() = user_id) |
+| public     | daily_stats | daily_stats_modify     | PERMISSIVE | {public} | INSERT | null                   | (auth.uid() = user_id) |
+| public     | daily_stats | daily_stats_select     | PERMISSIVE | {public} | SELECT | (auth.uid() = user_id) | null                   |
+| public     | daily_stats | daily_stats_update     | PERMISSIVE | {public} | UPDATE | (auth.uid() = user_id) | null                   |
+
+

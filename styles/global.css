@@ -641,3 +641,150 @@ button:active, .tool-card:active, .nav-item:active {
   background: #334155;
   border-radius: 10px;
 }
+/* 1. Ensure the wrapper acts as the anchor */
+.profile-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* 2. Style the menu */
+.profile-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Puts it directly below the avatar */
+    right: 0; 
+    
+    /* === THE FIX === */
+    /* This creates an invisible filler area at the top of the menu */
+    /* so your mouse doesn't fall into the "gap" */
+    padding-top: 15px; 
+    
+    z-index: 1000;
+}
+
+/* 3. Show menu when hovering the WRAPPER (not just the image) */
+.profile-wrapper:hover .profile-menu {
+    display: block;
+}
+
+/* Navbar Icon Button */
+.icon-btn-small {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px; /* Spacing between icons */
+}
+
+.icon-btn-small:hover {
+    background-color: #f1f5f9;
+    color: #6366f1;
+}
+
+/* Tooltip (The white box) */
+.tooltip-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.custom-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    background-color: white;
+    color: #333;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    transition: opacity 0.2s;
+}
+
+.tooltip-wrapper:hover .custom-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* 1. The Wrapper: Aligns button and navbar side-by-side */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between History icon and Profile */
+}
+
+/* 2. The Button: Resetting it to look like a Nav Icon */
+.floating-history-btn {
+    /* IMPORTANT: Reset position so it sits in the navbar */
+    position: relative; 
+    bottom: auto;
+    right: auto;
+    z-index: auto;
+    margin: 0;
+    
+    /* Icon Styling */
+    background: transparent;
+    color: #64748b; /* Slate Gray */
+    border: none;
+    border-radius: 50%;
+    padding: 8px;
+    cursor: pointer;
+    box-shadow: none; /* Remove the old floating shadow */
+    
+    /* Flex center */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+/* Hover Effect */
+.floating-history-btn:hover {
+    background-color: #f1f5f9;
+    color: #6366f1;
+}
+
+/* 3. The "Tool History" Tooltip (CSS Only) */
+.floating-history-btn::after {
+    content: "Tool History";
+    visibility: hidden;
+    opacity: 0;
+    
+    /* Tooltip Box Style */
+    background-color: white;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    
+    /* Position below button */
+    position: absolute;
+    top: 115%; 
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.floating-history-btn:hover::after {
+    visibility: visible;
+    opacity: 1;
+}

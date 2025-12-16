@@ -6,13 +6,18 @@ console.log("Tools page ready 🚀");
 let selectedTool = "";
 let conversationHistory = [];
 let isLoading = false;
-let typingInterval = null;
 
 const outputBox = document.getElementById("toolOutput");
 const inputBox = document.getElementById("toolInput");
 const runBtn = document.getElementById("runToolBtn");
 const toolTitleEl = document.getElementById("toolTitle");
 const toolHintEl = document.querySelector(".tool-hint");
+
+// History Modal Elements (Assumed to exist per requirements)
+const historyBtn = document.getElementById("toolHistoryBtn");
+const historyModal = document.getElementById("toolHistoryModal");
+const historyList = document.getElementById("toolHistoryList");
+const closeHistoryBtn = document.getElementById("closeHistoryBtn"); // Assuming a close button exists inside modal
 
 /* =========================================================
    1. SYSTEM PROMPT (ENGLISH ONLY — DO NOT REMOVE)
@@ -84,7 +89,62 @@ const PLACEHOLDERS = {
 };
 
 /* =========================================================
-   2. TOOL SELECTION
+   2. SUPABASE HISTORY INTEGRATION (NEW)
+========================================================= */
+
+/**
+ * Saves the tool usage to Supabase `tool_history` table.
+ * Designed to be "Fire and Forget" to not block UI.
+ */
+async function saveToolEntry(tool, input, output) {
+  // Guard clause: Ensure user is logged in and sb client exists
+  if (!window.sb || !window.currentUser) {
+    console.warn("Cannot save history: User not logged in or Supabase not initialized.");
+    return;
+  }
+
+  try {
+    const { error } = await window.sb.from('tool_history').insert({
+      user_id: window.currentUser.id,
+      tool: tool,
+      input_text: input,
+      output_text: output,
+      meta: { page: "tools", version: "v1" } // metadata
+    });
+
+    if (error) throw error;
+    console.log("✅ Tool history saved.");
+  } catch (err) {
+    console.error("❌ Error saving tool history:", err.message);
+  }
+}
+
+/**
+ * Loads history for the current user.
+ * Orders by newest first.
+ */
+async function loadToolHistory() {
+  if (!window.sb || !window.currentUser) return [];
+
+  try {
+    const { data, error } = await window.sb
+      .from('tool_history')
+      .select('*')
+      .eq('user_id', window.currentUser.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    console.log("📂 History loaded:", data);
+    return data; // Return data for the UI renderer
+  } catch (err) {
+    console.error("❌ Error loading history:", err.message);
+    return [];
+  }
+}
+
+/* =========================================================
+   3. TOOL SELECTION
 ========================================================= */
 document.querySelectorAll(".tool-card").forEach(card => {
   card.onclick = () => {
@@ -118,7 +178,7 @@ function resetToolState() {
 }
 
 /* =========================================================
-   3. BACKEND AI CALL
+   4. BACKEND AI CALL
 ========================================================= */
 const BACKEND_URL = "https://boostme-a0ca.onrender.com/api/chat";
 
@@ -146,7 +206,7 @@ async function callAI(messages) {
 }
 
 /* =========================================================
-   4. RUN TOOL
+   5. RUN TOOL (MODIFIED)
 ========================================================= */
 async function handleRunTool() {
   if (isLoading || !selectedTool) return;
@@ -169,6 +229,10 @@ async function handleRunTool() {
   conversationHistory.push({ role: "assistant", content: reply });
   appendMessage("ai", reply);
 
+  // --- SAVE HISTORY (NEW) ---
+  // We do not await this, so UI stays snappy
+  saveToolEntry(selectedTool, text, reply);
+
   runBtn.innerHTML = "Run ✨";
   runBtn.disabled = false;
   isLoading = false;
@@ -185,7 +249,7 @@ inputBox.addEventListener("keydown", e => {
 });
 
 /* =========================================================
-   5. UI HELPERS
+   6. UI HELPERS
 ========================================================= */
 function appendMessage(role, text) {
   const div = document.createElement("div");
@@ -225,7 +289,7 @@ function escapeHtml(text) {
 }
 
 /* =========================================================
-   6. CHATGPT-STYLE CODE BLOCK FORMATTER
+   7. CHATGPT-STYLE CODE BLOCK FORMATTER
 ========================================================= */
 function formatAIOutput(raw) {
   if (!raw) return "";
@@ -268,8 +332,114 @@ function wireCopyButtons(container) {
     };
   });
 }
+
 /* =========================================================
-   7. 🎤 VOICE INPUT (ADD THIS)
+   8. HISTORY MODAL LOGIC (NEW)
+========================================================= */
+
+// Event Listeners for Modal
+if (historyBtn) {
+  historyBtn.onclick = openToolHistory;
+}
+if (closeHistoryBtn) {
+  closeHistoryBtn.onclick = closeToolHistory;
+}
+// Close on outside click
+window.addEventListener("click", (e) => {
+  if (e.target === historyModal) closeToolHistory();
+});
+
+async function openToolHistory() {
+  if (!historyModal) return;
+  historyModal.style.display = "block"; // Or add a class .show
+  
+  if (historyList) {
+    historyList.innerHTML = "<p>Loading history...</p>";
+    const historyData = await loadToolHistory();
+    renderHistoryList(historyData);
+  }
+}
+
+function closeToolHistory() {
+  if (!historyModal) return;
+  historyModal.style.display = "none";
+}
+
+function renderHistoryList(data) {
+  if (!historyList) return;
+  historyList.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    historyList.innerHTML = "<p>No history found yet.</p>";
+    return;
+  }
+
+  // Group by date logic (Today, Yesterday, Older)
+  const grouped = { Today: [], Yesterday: [], Older: [] };
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+  data.forEach(item => {
+    const itemDate = new Date(item.created_at).toDateString();
+    if (itemDate === today) grouped.Today.push(item);
+    else if (itemDate === yesterday) grouped.Yesterday.push(item);
+    else grouped.Older.push(item);
+  });
+
+  // Render Logic
+  Object.keys(grouped).forEach(key => {
+    if (grouped[key].length > 0) {
+      const header = document.createElement("h4");
+      header.innerText = key;
+      header.className = "history-date-header";
+      historyList.appendChild(header);
+
+      grouped[key].forEach(item => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        // Create a summary snippet
+        div.innerHTML = `
+          <span class="history-tool-badge">${item.tool}</span>
+          <span class="history-query">${escapeHtml(item.input_text.substring(0, 40))}...</span>
+        `;
+        div.onclick = () => loadHistoryItemToView(item);
+        historyList.appendChild(div);
+      });
+    }
+  });
+}
+
+/**
+ * Optional: Clicking a history item re-displays it in the main view
+ * This is a bonus UX improvement
+ */
+function loadHistoryItemToView(item) {
+  // Switch to the correct tool context
+  if (selectedTool !== item.tool) {
+    // Ideally select the tool card, but here we just set state
+    selectedTool = item.tool;
+    // Note: We might want to trigger the UI click here in a full implementation
+  }
+
+  closeToolHistory();
+  outputBox.innerHTML = ""; // Clear current view
+  
+  // Re-inject history into view
+  appendMessage("user", item.input_text);
+  appendMessage("ai", item.output_text);
+  
+  // Update system context
+  conversationHistory = [
+    { role: "system", content: BASE_SYSTEM_PROMPT + "\n\nCURRENT ROLE:\n" + TOOL_DEFINITIONS[item.tool] },
+    { role: "user", content: item.input_text },
+    { role: "assistant", content: item.output_text }
+  ];
+  
+  if (window.Prism) Prism.highlightAll();
+}
+
+/* =========================================================
+   9. 🎤 VOICE INPUT
 ========================================================= */
 
 const micBtn = document.getElementById("voiceBtn");
@@ -310,3 +480,29 @@ if ("webkitSpeechRecognition" in window && micBtn) {
   // Browser not supported
   if (micBtn) micBtn.style.display = "none";
 }
+const clearToolHistoryBtn = document.getElementById("clearToolHistoryBtn");
+
+if (clearToolHistoryBtn) {
+  clearToolHistoryBtn.onclick = async () => {
+    if (!window.currentUser) return;
+
+    const ok = confirm("Clear ALL tool history? This cannot be undone.");
+    if (!ok) return;
+
+    try {
+      const { error } = await sb
+        .from("tool_history")
+        .delete()
+        .eq("user_id", window.currentUser.id);
+
+      if (error) throw error;
+
+      historyList.innerHTML = "<p>History cleared 🧹</p>";
+      console.log("🧹 Tool history cleared");
+    } catch (e) {
+      alert("Failed to clear history");
+      console.error(e);
+    }
+  };
+}
+

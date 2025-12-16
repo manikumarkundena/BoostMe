@@ -274,3 +274,29 @@ body.dark .login-footer { border-top-color: rgba(255,255,255,0.1); }
     background: rgba(255,255,255,0.5);
 }
 .small-btn:hover { background: white; transform: rotate(2deg); }
+
+/* 1. Ensure the wrapper acts as the anchor */
+.profile-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* 2. Style the menu */
+.profile-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Puts it directly below the avatar */
+    right: 0; 
+    
+    /* === THE FIX === */
+    /* This creates an invisible filler area at the top of the menu */
+    /* so your mouse doesn't fall into the "gap" */
+    padding-top: 15px; 
+    
+    z-index: 1000;
+}
+
+/* 3. Show menu when hovering the WRAPPER (not just the image) */
+.profile-wrapper:hover .profile-menu {
+    display: block;
+}

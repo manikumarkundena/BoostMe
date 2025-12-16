@@ -97,9 +97,6 @@ function stopBreathingText() {
 /* ===============================
    2. BUBBLE WRAP LOGIC + SOUND 🫧
 ================================= */
-/* ===============================
-   2. BUBBLE WRAP LOGIC + SOUND 🫧
-================================= */
 const bubbleGrid = document.getElementById("bubbleGrid");
 
 // 🆕 Mood Boost Emojis
@@ -122,6 +119,7 @@ function initBubbles() {
         bubbleGrid.appendChild(b);
     }
 }
+
 function popBubble(el) {
     if (el.classList.contains("popped")) return;
     
@@ -135,6 +133,7 @@ function popBubble(el) {
 
     // CHECK WIN CONDITION
     checkAllPopped();
+    
     // 🆕 Update Stress Label dynamically
     const remaining = document.querySelectorAll(".bubble:not(.popped)").length;
     const label = document.getElementById("stressLabel");
@@ -151,7 +150,10 @@ function checkAllPopped() {
     const remaining = document.querySelectorAll(".bubble:not(.popped)").length;
     
     if (remaining === 0) {
-        // 🎉 ALL POPPED!
+        // 🎉 ALL POPPED! - COMPLETION POINT 1
+        // ✅ CALL GLOBAL HELPER FROM supabase.js
+        if (window.saveDailyStats) window.saveDailyStats({ gamesPlayed: 1 });
+
         setTimeout(() => {
             // 🔊 2. PLAY SUCCESS SOUND
             if(window.synth) window.synth.success();
@@ -199,8 +201,6 @@ function toggleMusic(card) {
         card.classList.remove("playing");
     } else {
         // Start Music
-        // Stop fire sound if active (optional)
-        
         if(lofiAudio) {
             // Reload src to ensure stream is live
             const currentSrc = lofiAudio.querySelector('source').src;
@@ -267,6 +267,10 @@ function burnStress() {
         ventInput.classList.remove("burning");
         
         if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+        
+        // 🔥 BURN COMPLETE - COMPLETION POINT 2
+        // ✅ CALL GLOBAL HELPER FROM supabase.js
+        if (window.saveDailyStats) window.saveDailyStats({ gamesPlayed: 1 });
         
     }, 800);
 }

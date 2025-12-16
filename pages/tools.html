@@ -35,6 +35,11 @@
             <div class="top-subtext">Productivity OS</div>
         </div>
     </div>
+    <button id="toolHistoryBtn" class="icon-btn secondary-icon" title="Tool History">
+  <i data-lucide="history"></i>
+</button>
+
+
 
     <!-- 🔥 THIS IS IMPORTANT -->
     <div class="top-right" id="navbar-right">
@@ -138,6 +143,28 @@
 
    
   </nav>
+  <div id="toolHistoryModal" class="history-modal">
+  <div class="history-content">
+    <h2>🧰 Tool History</h2>
+
+    <div id="toolHistoryList" class="history-list">
+      <!-- Filled dynamically -->
+    </div>
+    <div class="history-actions">
+  <button id="clearToolHistoryBtn" class="clear-history-btn">
+    Clear All
+  </button>
+  <button id="closeHistoryBtn" class="close-btn">
+    Close
+  </button>
+</div>
+
+    
+  </div>
+</div>
+
+
+
   <script src="../scripts/sound.js"></script>
   <!-- SCRIPTS (order matters) -->
  <!-- 1️⃣ External libraries -->
