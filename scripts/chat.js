@@ -1,51 +1,31 @@
 /* ===============================
-   BoostMe — chat.js (FINAL - FIXED)
-   Drop-in replacement for your chat.js
+   BoostMe — chat.js (FINAL - MODULAR UI + STATS FIXED + TOASTS)
 ================================*/
-
-/* ===============================
-   RUNTIME API KEY (SAFE METHOD)
-   - NOT stored in code
-   - NOT committed
-   - Lives only during session
-================================*/
-
 
 /* ------------------------------
    CONFIG / GLOBALS
-   - Keep this synced with your config.js if needed
 -------------------------------*/
 async function waitForUser() {
-  let tries = 0;
-  // Wait up to 3 seconds for auth to hydrate
-  while (!window.currentUser && tries < 30) {
-    await new Promise(r => setTimeout(r, 100));
-    tries++;
-  }
-  return window.currentUser;
+    let tries = 0;
+    // Wait up to 3 seconds for auth to hydrate
+    while (!window.currentUser && tries < 30) {
+        await new Promise(r => setTimeout(r, 100));
+        tries++;
+    }
+    return window.currentUser;
 }
 
 const BACKEND_URL = (window.BOOSTME_CONFIG && window.BOOSTME_CONFIG.BACKEND_URL) 
     || "https://boostme-a0ca.onrender.com/api/chat";
 
 let appLang = "en-US";
- // will be set by your auth check if supabase exists
-
-// Timer flags to prevent duplicate challenges / multiple timers
 let activeTimer = null;
 let timerSoundInterval = null;
 let timerRemaining = 0;
-let challengeLocked = false; // prevents duplicate challenge creation while a challenge/timer is active
-
-/* ------------------------------
-   SAFETY: try to auto-load supabase user if available
--------------------------------*/
-
+let challengeLocked = false; 
 
 /* ===============================
-   LANGUAGE / PROMPT HELPERS
-   - lightweight language detection (telugu/devanagari/latin)
-   - returns an instruction snippet for prompts & speechLang
+   LANGUAGE & AI HELPERS
 ================================*/
 function getLanguageInfo(msg) {
     const text = msg || "";
@@ -83,13 +63,7 @@ function getLanguageInfo(msg) {
     return { code, speechLang, instruction };
 }
 
-/* ===============================
-   BACKEND CALL (robust)
-   - accepts a single prompt (string) OR messages array
-   - handles many shapes of response and network errors
-================================*/
 async function callAI(input) {
-    // input may be a string prompt OR an array of messages
     const body = {};
     if (Array.isArray(input)) body.messages = input;
     else body.messages = [
@@ -104,34 +78,20 @@ async function callAI(input) {
             body: JSON.stringify(body)
         });
 
-        // if response not ok, attempt to parse JSON and surface message
         const text = await res.text();
         let data;
         try { data = JSON.parse(text); } catch (e) { data = null; }
 
         if (!res.ok) {
-            // prefer returned error message if present
             const errMsg = data?.error || data?.message || `HTTP ${res.status}`;
             return `⚠️ API Error: ${errMsg}`;
         }
 
-        // Normal success shapes:
-        // 1) { choices: [ { message: { content: "..." } } ] }
         if (data?.choices?.[0]?.message?.content) return data.choices[0].message.content;
-
-        // 2) { content: "..." }
         if (typeof data?.content === "string") return data.content;
-
-        // 3) { content: [ { text: "..." }, ... ] }
-        if (Array.isArray(data?.content)) {
-            return data.content.map(c => c.text || "").join("\n").trim();
-        }
-
-        // 4) { message: "..."} or { text: "..." }
+        if (Array.isArray(data?.content)) return data.content.map(c => c.text || "").join("\n").trim();
         if (typeof data?.message === "string") return data.message;
         if (typeof data?.text === "string") return data.text;
-
-        // 5) raw string body (some proxies return raw)
         if (typeof text === "string" && text.trim().length > 0) return text.trim();
 
         return "⚠️ AI Error (Invalid response format)";
@@ -142,7 +102,7 @@ async function callAI(input) {
 }
 
 /* ===============================
-   PROMPTS (language-aware wrappers)
+   PROMPTS
 ================================*/
 function moodPrompt(msg, langInfo) {
     return `
@@ -169,7 +129,7 @@ Keep it playful and simple.
 }
 
 /* ===============================
-   UI BUBBLES (unchanged core features)
+   UI BUBBLES
 ================================*/
 function addUserBubble(text) {
     const box = document.getElementById("chatBox");
@@ -187,7 +147,6 @@ function addAIBubble(text) {
 
     const b = document.createElement("div");
     b.className = "ai-bubble";
-
     const span = document.createElement("span");
     span.innerHTML = (text || "").replace(/\n/g, "<br>");
     b.appendChild(span);
@@ -205,13 +164,9 @@ function addAIBubble(text) {
     b.appendChild(btn);
     box.appendChild(b);
     box.scrollTop = box.scrollHeight;
-
     if (window.lucide) window.lucide.createIcons();
 }
 
-/* ===============================
-   TTS (uses appLang set from detection)
-================================*/
 function speakText(text) {
     if (!window.speechSynthesis) return;
     try {
@@ -228,13 +183,9 @@ function speakText(text) {
     }
 }
 
-/* ===============================
-   Typing indicator
-================================*/
 function showTyping() {
     const box = document.getElementById("chatBox");
     if (!box) return;
-    // prevent duplicates
     if (document.getElementById("typingBubble")) return;
     const t = document.createElement("div");
     t.className = "typing-indicator";
@@ -249,14 +200,12 @@ function hideTyping() {
 }
 
 /* ===============================
-   CHALLENGE CARD & CUSTOM TIME (preserve UI)
-   - prevents duplicate challenge card creation while active
+   CHALLENGE LOGIC
 ================================*/
 function createChallengeCard(text) {
     const chatBox = document.getElementById("chatBox");
     if (!chatBox) return;
 
-    // If there's already a challenge-card and a timer active, don't create another
     if (challengeLocked) {
         addAIBubble("⚠️ Challenge already active — finish or stop it first.");
         return;
@@ -268,9 +217,7 @@ function createChallengeCard(text) {
     card.innerHTML = `
         <div class="challenge-title">🔥 BoostMe Challenge</div>
         <div class="challenge-text">${text}</div>
-
         <div class="focus-label">⏱ Choose Focus Time</div>
-
         <div class="time-options">
             <button class="time-btn" data-seconds="30">30s</button>
             <button class="time-btn" data-seconds="60">1 min</button>
@@ -278,7 +225,6 @@ function createChallengeCard(text) {
             <button class="time-btn" data-seconds="300">5 min</button>
             <button class="time-btn custom-btn">Custom</button>
         </div>
-
         <div class="custom-time-input" style="display:none; margin-top:8px;">
             <input type="number" id="customTimeVal" min="10" placeholder="sec">
             <button id="applyCustomTimeBtn">OK</button>
@@ -288,7 +234,6 @@ function createChallengeCard(text) {
     chatBox.appendChild(card);
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    // Wire buttons (delegated)
     card.querySelectorAll(".time-btn").forEach(btn => {
         if (btn.classList.contains("custom-btn")) {
             btn.onclick = () => {
@@ -318,9 +263,6 @@ function createChallengeCard(text) {
     }
 }
 
-/* ===============================
-   CLEAR existing timers/cards etc.
-================================*/
 function clearExistingTimers() {
     if (activeTimer) {
         clearInterval(activeTimer);
@@ -331,48 +273,33 @@ function clearExistingTimers() {
         timerSoundInterval = null;
     }
     timerRemaining = 0;
-
     document.querySelectorAll(".circle-timer-wrap").forEach(e => e.remove());
     document.querySelectorAll(".challenge-progress-bar").forEach(e => e.remove());
     document.querySelectorAll(".challenge-card").forEach(e => e.remove());
 }
 
-/* ===============================
-   START CHALLENGE TIMER
-   - second param 'cardEl' is optional — used to disable time-btns while running
-================================*/
 function startChallengeTimer(seconds, cardEl = null) {
     if (challengeLocked) {
         addAIBubble("⚠️ Another challenge is already running.");
         return;
     }
 
-    challengeLocked = true; // 🔒 LOCK HERE
-
+    challengeLocked = true;
     if (cardEl) {
-        cardEl.querySelectorAll(
-            ".time-btn, #applyCustomTimeBtn, #customTimeVal"
-        ).forEach(el => el.disabled = true);
+        cardEl.querySelectorAll(".time-btn, #applyCustomTimeBtn, #customTimeVal").forEach(el => el.disabled = true);
     }
-
     clearExistingTimers();
-
     addAIBubble("⏱️ Timer started! Focus: " + seconds + "s");
     showCircularTimer(seconds);
     showLinearBarTimer(seconds);
 }
 
-/* ===============================
-   Circular timer + last-second sound logic
-   - plays alert sound once per second during alert window to avoid overlapping
-================================*/
 function showCircularTimer(seconds) {
     const chatBox = document.getElementById("chatBox");
     if (!chatBox) return;
 
     const wrap = document.createElement("div");
     wrap.className = "circle-timer-wrap";
-
     wrap.innerHTML = `
         <div class="circle-timer">
             <svg class="timer-svg" width="80" height="80">
@@ -394,50 +321,39 @@ function showCircularTimer(seconds) {
     circle.style.strokeDasharray = totalLength;
     circle.style.strokeDashoffset = 0;
 
-    // alert threshold: last 5 sec if short timer, else last 10s
-    const alertThreshold = seconds <= 30 ? 5 : 10;
     const snd = document.getElementById("timerSound");
 
-    // We'll run our interval and handle sound playback once per second when within alert window.
     activeTimer = setInterval(() => {
-    remaining--;
-    timerRemaining = remaining;
-    txt.innerText = remaining + "s";
+        remaining--;
+        timerRemaining = remaining;
+        txt.innerText = remaining + "s";
+        const progress = ((seconds - remaining) / seconds) * totalLength;
+        circle.style.strokeDashoffset = progress;
 
-    const progress = ((seconds - remaining) / seconds) * totalLength;
-    circle.style.strokeDashoffset = progress;
-
-    // 🎨 COLOR + 🔔 SOUND
-    if (remaining <= 5 && remaining > 0) {
-        circle.style.stroke = "#ff4e4e";
-        if (snd) {
-            snd.currentTime = 0;
-            snd.play().catch(()=>{});
-        }
-    } else if (remaining <= 15) {
-        circle.style.stroke = "#ff8b2d";
-    } else {
-        circle.style.stroke = "#7b5dff";
-    }
-
-    if (remaining <= 0) {
-        clearInterval(activeTimer);
-        activeTimer = null;
-
-        if (snd) {
-            snd.pause();
-            snd.currentTime = 0;
+        if (remaining <= 5 && remaining > 0) {
+            circle.style.stroke = "#ff4e4e";
+            if (snd) {
+                snd.currentTime = 0;
+                snd.play().catch(()=>{});
+            }
+        } else if (remaining <= 15) {
+            circle.style.stroke = "#ff8b2d";
+        } else {
+            circle.style.stroke = "#7b5dff";
         }
 
-        finishTimer(seconds);
-    }
-}, 1000);
-
+        if (remaining <= 0) {
+            clearInterval(activeTimer);
+            activeTimer = null;
+            if (snd) {
+                snd.pause();
+                snd.currentTime = 0;
+            }
+            finishTimer(seconds);
+        }
+    }, 1000);
 }
 
-/* ===============================
-   Linear progress bar
-================================*/
 function showLinearBarTimer(seconds) {
     const chatBox = document.getElementById("chatBox");
     if (!chatBox) return;
@@ -450,8 +366,6 @@ function showLinearBarTimer(seconds) {
 
     const fill = bar.querySelector(".challenge-progress-fill");
     let remaining = seconds;
-
-    // set initial width to 100% and reduce
     fill.style.width = "100%";
 
     const interval = setInterval(() => {
@@ -459,7 +373,6 @@ function showLinearBarTimer(seconds) {
         const percent = Math.max(0, (remaining / seconds) * 100);
         fill.style.width = percent + "%";
 
-        // color stages (keeps your design)
         if (percent > 60) fill.style.background = "#7b5dff";
         else if (percent > 40) fill.style.background = "#ffd24d";
         else if (percent > 20) fill.style.background = "#ff8b2d";
@@ -470,37 +383,64 @@ function showLinearBarTimer(seconds) {
 }
 
 /* ===============================
-   finishTimer — cleanup + message
+   finishTimer — cleanup + message + STATS FIX
 ================================*/
 async function finishTimer(seconds) {
     clearExistingTimers();
     addAIBubble(`🔥 Time's up! You nailed that ${seconds}s focus sesh bro!`);
     challengeLocked = false;
 
-    // 🔥 SAVE CHALLENGE TIME TO DAILY_STATS
-    if (window.currentUser && window.sb) {
+    // 🔥 UPDATED: Increment Stats using Helper
+    if (window.currentUser) {
         const minutes = Math.ceil(seconds / 60);
-        const today = new Date().toISOString().split("T")[0];
+        await incrementDailyStats({
+            challenge_minutes: minutes,
+            challenges_completed: 1
+        });
+    }
+}
 
-        const { error } = await sb.from("daily_stats").upsert({
-            user_id: window.currentUser.id,
-            date: today,
-            challenge_minutes: minutes
-        }, { onConflict: "user_id,date" });
+/* ===============================
+   HELPER: Safe Stats Increment
+================================*/
+async function incrementDailyStats(updates) {
+    if (!window.currentUser || !window.sb) return;
+    const userId = window.currentUser.id;
+    const today = new Date().toISOString().split("T")[0];
 
-        if (error) console.error("❌ Challenge stats save failed:", error);
+    try {
+        const { data: current } = await sb
+            .from("daily_stats")
+            .select("*")
+            .eq("user_id", userId)
+            .eq("date", today)
+            .single();
+
+        const base = current || {};
+        const payload = { user_id: userId, date: today };
+
+        for (const key in updates) {
+            payload[key] = (base[key] || 0) + updates[key];
+        }
+
+        const { error } = await sb
+            .from("daily_stats")
+            .upsert(payload, { onConflict: "user_id,date" });
+
+        if (error) throw error;
+        console.log("✅ Stats updated:", updates);
+
+    } catch (err) {
+        console.error("❌ Stats update failed:", err);
     }
 }
 
 
 /* ===============================
-   SEND/MAIN flow (mood -> motivate -> challenge)
-   - FIXED: Proper Supabase awaiting and error logging
-   - FIXED: Uses 'user' variable, not unstable window.currentUser
+   MESSAGE SEND FLOW
 ================================*/
 async function sendMessage() {
-    const user = await waitForUser(); // 🔥 IMPORTANT: wait for auth
-
+    const user = await waitForUser(); 
     const input = document.getElementById("userInput");
     if (!input) return;
     const msg = input.value.trim();
@@ -512,98 +452,53 @@ async function sendMessage() {
     const langInfo = getLanguageInfo(msg);
     appLang = langInfo.speechLang || "en-US";
 
-    // 1. Save USER message (FIXED)
     if (user && typeof sb !== "undefined") {
-        const { error } = await sb.from("chat_messages").insert({
-            user_id: user.id, // ✅ Safe ID
+        sb.from("chat_messages").insert({
+            user_id: user.id,
             sender: "user",
             message: msg
-        });
-        if (error) console.error("❌ Save User Msg Failed:", error);
+        }).then(({error}) => { if(error) console.error("Save User Msg Failed", error) });
     }
 
-    // 2. Mood
+    // Mood
     showTyping();
     const mood = await callAI(moodPrompt(msg, langInfo));
     hideTyping();
     addAIBubble(mood || "⚠️ AI Error");
+    if (user) sb.from("chat_messages").insert({ user_id: user.id, sender: "ai", message: mood }).then();
 
-    if (user && typeof sb !== "undefined") {
-        const { error } = await sb.from("chat_messages").insert({
-            user_id: user.id, // ✅ Safe ID
-            sender: "ai",
-            message: mood || ""
-        });
-        if (error) console.error("❌ Save Mood Failed:", error);
-    }
-
-    // 3. Motivation
+    // Motivation
     showTyping();
     const motivate = await callAI(motivatePrompt(msg, langInfo));
     hideTyping();
     addAIBubble(motivate || "⚠️ AI Error");
+    if (user) sb.from("chat_messages").insert({ user_id: user.id, sender: "ai", message: motivate }).then();
 
-    if (user && typeof sb !== "undefined") {
-        const { error } = await sb.from("chat_messages").insert({
-            user_id: user.id, // ✅ Safe ID
-            sender: "ai",
-            message: motivate || ""
-        });
-        if (error) console.error("❌ Save Motivation Failed:", error);
-    }
-
-    // 4. Challenge — create card
+    // Challenge
     showTyping();
     const challenge = await callAI(challengePrompt(langInfo));
     hideTyping();
     createChallengeCard(challenge || "Take 3 slow deep breaths.");
-
-    if (user && typeof sb !== "undefined") {
-        const { error } = await sb.from("chat_messages").insert({
-            user_id: user.id, // ✅ Safe ID
-            sender: "ai",
-            message: challenge || ""
-        });
-        if (error) console.error("❌ Save Challenge Failed:", error);
-    }
+    if (user) sb.from("chat_messages").insert({ user_id: user.id, sender: "ai", message: challenge }).then();
 }
 
-/* ===============================
-   Manual challenge invoker (floating quick button)
-   - FIXED: Added waitForUser() and proper DB saving
-================================*/
 async function manualChallenge() {
     if (challengeLocked) {
-        addAIBubble("⚠️ A challenge is already running. Finish it before starting another.");
+        addAIBubble("⚠️ A challenge is already running. Finish it first.");
         return;
     }
-    
-    // 🔥 Added auth wait here too
     const user = await waitForUser();
-
     showTyping();
-    // default language: english buddy
-    const langInfo = { instruction: "Reply in casual modern English, friendly buddy.", speechLang: "en-US", code: "en" };
+    const langInfo = { instruction: "Reply in casual English.", speechLang: "en-US", code: "en" };
     const ch = await callAI(challengePrompt(langInfo));
     hideTyping();
     
     createChallengeCard(ch || "Do 10 seconds stretch.");
-
-    // FIXED: Save manual challenge to DB
-    if (user && typeof sb !== "undefined") {
-        const { error } = await sb.from("chat_messages").insert({
-            user_id: user.id, 
-            sender: "ai", 
-            message: ch || "" 
-        });
-        if (error) console.error("❌ Save Manual Challenge Failed:", error);
-    }
+    if (user) sb.from("chat_messages").insert({ user_id: user.id, sender: "ai", message: ch }).then();
 }
 
 /* ===============================
-   CHAT HISTORY modal + clear
-   - FIXED: Replaced 'currentUser' with 'window.currentUser'
-   - FIXED: Better error alerting
+   HISTORY MODAL (UPDATED WITH TOASTS & CHECKS)
 ================================*/
 const historyBtn = document.getElementById("historyBtn");
 const historyModal = document.getElementById("historyModal");
@@ -615,18 +510,16 @@ function openHistory() { historyModal && historyModal.classList.add("active"); }
 function closeHistory() { historyModal && historyModal.classList.remove("active"); }
 
 async function loadChatHistoryModal() {
-    // FIXED: Use window.currentUser
     if (!window.currentUser) {
-        alert("Login to view chat history!");
+        showToast("Please login to view chat history!", "error");
         return;
     }
 
     if (!historyList) return;
-    historyList.innerHTML = `<div class="history-item">Loading…</div>`;
+    historyList.innerHTML = `<div class="history-item">Loading...</div>`;
     openHistory();
 
     try {
-        // FIXED: Use window.currentUser.id
         const { data, error } = await sb.from("chat_messages")
             .select("*")
             .eq("user_id", window.currentUser.id)
@@ -635,11 +528,10 @@ async function loadChatHistoryModal() {
         if (error) throw error;
 
         if (!data || data.length === 0) {
-            historyList.innerHTML = `<div class="history-item">No past messages 😶</div>`;
+            historyList.innerHTML = `<div class="history-item" style="text-align:center; opacity:0.6;">No past messages 😶</div>`;
             return;
         }
 
-        // Group by date
         const groups = {};
         data.forEach(row => {
             const date = new Date(row.created_at).toLocaleDateString();
@@ -669,93 +561,151 @@ async function loadChatHistoryModal() {
     }
 }
 
-clearHistoryBtn && (clearHistoryBtn.onclick = async () => {
-    if (!confirm("Delete ALL your chat history?")) return;
-    // FIXED: Use window.currentUser
-    if (!window.currentUser) return;
-    try {
-        const { error } = await sb.from("chat_messages").delete().eq("user_id", window.currentUser.id);
-        if (error) throw error;
-        historyList.innerHTML = `<div class="history-item">History cleared 🧹</div>`;
-    } catch (e) {
-        console.error("clear history failed", e);
-        alert("Failed to clear history. See console.");
-    }
-});
+// ✨ FIXED CLEAR HISTORY LOGIC (No Overlaps)
+if (clearHistoryBtn) {
+    clearHistoryBtn.onclick = () => {
+        if (!window.currentUser) {
+            showToast("Please login first!", "error");
+            return;
+        }
+        
+        // 1️⃣ CHECK IF EMPTY
+        const hasContent = historyList.querySelector(".history-date");
+        if (!hasContent) {
+            showToast("Nothing to delete here! ✨", "warning");
+            return; 
+        }
 
-/* ===============================
-   VOICE input wiring (keeps behavior)
-================================*/
-const voiceBtn = document.getElementById("chatVoiceBtn");
+        // 2️⃣ CLOSE HISTORY MODAL FIRST (Fixes the overlapping issue)
+        closeHistory();
 
-if (voiceBtn && ("webkitSpeechRecognition" in window)) {
-    const recognition = new webkitSpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+        // 3️⃣ WAIT 100ms & SHOW CONFIRMATION
+        setTimeout(async () => {
+            let confirmed = false;
+            
+            if (window.ui) {
+                confirmed = await ui.confirm("Clear History?", "Are you sure? This deletes ALL chat history permanently.", true);
+            } else {
+                confirmed = confirm("Delete ALL your chat history?");
+            }
 
-    voiceBtn.onclick = () => {
-        voiceBtn.classList.add("active"); // 🔴 RED MODE ON
-        recognition.start();
-    };
+            // 4️⃣ HANDLE CANCEL
+            if (!confirmed) {
+                openHistory(); // Re-open history if they cancelled so they don't lose context
+                return;
+            }
 
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        const ui = document.getElementById("userInput");
-        if (ui) ui.value = transcript;
-    };
-
-    recognition.onend = () => {
-        voiceBtn.classList.remove("active"); // 🔴 RED MODE OFF
-    };
-
-    recognition.onerror = () => {
-        voiceBtn.classList.remove("active"); // safety
+            // 5️⃣ DELETE OPERATION
+            try {
+                const { error } = await sb.from("chat_messages").delete().eq("user_id", window.currentUser.id);
+                if (error) throw error;
+                
+                // Update UI state (will be visible next time they open it)
+                historyList.innerHTML = `<div class="history-item" style="text-align:center; opacity:0.6;">No past messages 😶</div>`;
+                showToast("History cleared successfully! 🧹", "success");
+                
+            } catch (e) {
+                console.error("clear history failed", e);
+                showToast("Failed to clear history.", "error");
+                openHistory(); // Re-open on error
+            }
+        }, 100);
     };
 }
 
 /* ===============================
-   INIT / EVENT BINDINGS
+   VOICE & INIT
 ================================*/
+const voiceBtn = document.getElementById("chatVoiceBtn");
+if (voiceBtn && ("webkitSpeechRecognition" in window)) {
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    voiceBtn.onclick = () => {
+        voiceBtn.classList.add("active");
+        recognition.start();
+    };
+    recognition.onresult = (e) => {
+        const t = e.results[0][0].transcript;
+        const ui = document.getElementById("userInput");
+        if (ui) ui.value = t;
+    };
+    recognition.onend = () => voiceBtn.classList.remove("active");
+}
+
 function initChat() {
-    
     const sendBtn = document.getElementById("sendBtn");
     const userInput = document.getElementById("userInput");
-
     if (!sendBtn || !userInput) {
-        console.warn("Chat DOM not ready yet, retrying...");
         return setTimeout(initChat, 100);
     }
-
     sendBtn.onclick = sendMessage;
-
     userInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
-
     document.querySelectorAll(".chip").forEach(chip => {
         chip.onclick = () => {
             userInput.value = chip.innerText;
             sendMessage();
         };
     });
-
     const quick = document.querySelector(".floating-quick-btn");
     if (quick) quick.onclick = manualChallenge;
 
-    console.log("✅ Chat initialized");
     const historyBtn = document.getElementById("historyBtn");
-if (historyBtn) {
-    historyBtn.onclick = loadChatHistoryModal;
-    console.log("✅ History button bound");
-} else {
-    console.warn("❌ historyBtn not found in DOM");
+    if (historyBtn) historyBtn.onclick = loadChatHistoryModal;
+    
+    console.log("✅ Chat initialized");
 }
 
+/* ===============================
+   TOAST NOTIFICATION (SHARED)
+================================*/
+function showToast(message, type = "success") {
+  // Create toast container if it doesn't exist
+  let toastContainer = document.getElementById("toast-container");
+  if (!toastContainer) {
+    toastContainer = document.createElement("div");
+    toastContainer.id = "toast-container";
+    toastContainer.style.cssText = `
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    `;
+    document.body.appendChild(toastContainer);
+  }
+
+  const toast = document.createElement("div");
+  
+  let bg = "#00C851"; // Default Green
+  let color = "#fff";
+  
+  if (type === "error") { bg = "#ff4d4d"; }
+  else if (type === "warning") { bg = "#ffca28"; color = "#333"; }
+  
+  toast.innerText = message;
+  toast.style.cssText = `
+    background: ${bg}; color: ${color}; padding: 12px 24px;
+    border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-family: sans-serif; font-weight: 600; font-size: 14px;
+    opacity: 0; transform: translateX(20px); transition: all 0.3s ease;
+    pointer-events: auto;
+  `;
+
+  toastContainer.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  });
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(20px)";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
-// 🔥 IMPORTANT: run AFTER navbar & auth
 setTimeout(initChat, 0);

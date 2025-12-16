@@ -38,7 +38,6 @@ function switchMode(mode) {
     else if (mode === 'fire') {
         fireUI.style.display = "flex";
         fireUI.style.flexDirection = "column";
-        // Ambient fire crackle via synth (simulated noise) or just silence
     }
 
     // 4. Update Visual Active State
@@ -150,12 +149,16 @@ function checkAllPopped() {
     const remaining = document.querySelectorAll(".bubble:not(.popped)").length;
     
     if (remaining === 0) {
-        // 🎉 ALL POPPED! - COMPLETION POINT 1
-        // ✅ CALL GLOBAL HELPER FROM supabase.js
-        if (window.saveDailyStats) window.saveDailyStats({ gamesPlayed: 1 });
+        // 🎉 ALL POPPED!
+        
+        // 1. STATS
+        incrementDailyStats({ gamesPlayed: 1 });
+
+        // 2. ✨ SUCCESS TOAST POPUP
+        showToast("So satisfying! Stress level zero! 🫧✨", "success");
 
         setTimeout(() => {
-            // 🔊 2. PLAY SUCCESS SOUND
+            // 🔊 3. PLAY SUCCESS SOUND
             if(window.synth) window.synth.success();
             if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
             
@@ -206,7 +209,7 @@ function toggleMusic(card) {
             const currentSrc = lofiAudio.querySelector('source').src;
             lofiAudio.src = currentSrc; 
             lofiAudio.volume = 0.5;
-            lofiAudio.play().catch(e => alert("Tap again to play (Browser blocked auto-audio)"));
+            lofiAudio.play().catch(e => showToast("Tap again to play (Auto-audio blocked)", "warning"));
         }
         card.classList.add("playing");
         
@@ -237,7 +240,7 @@ function stopFireSound() {
 
 function burnStress() {
     if (!ventInput.value.trim()) {
-        alert("Write something to burn first!");
+        showToast("Write something to burn first! 🔥", "warning");
         return;
     }
 
@@ -268,9 +271,9 @@ function burnStress() {
         
         if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
         
-        // 🔥 BURN COMPLETE - COMPLETION POINT 2
-        // ✅ CALL GLOBAL HELPER FROM supabase.js
-        if (window.saveDailyStats) window.saveDailyStats({ gamesPlayed: 1 });
+        // 🔥 BURN COMPLETE - STATS
+        incrementDailyStats({ completed_tasks: 1 });
+        showToast("It's gone now. You're free. 🍃", "success");
         
     }, 800);
 }
@@ -279,6 +282,87 @@ function resetFire() {
     if(postBurnMsg) postBurnMsg.style.display = "none";
     if(inputArea) inputArea.style.display = "block";
     if(window.synth) window.synth.click();
+}
+
+/* ===============================
+   HELPER: Safe Stats Increment
+================================*/
+async function incrementDailyStats(updates) {
+    if (!window.currentUser || !window.sb) return;
+    const userId = window.currentUser.id;
+    const today = new Date().toISOString().split("T")[0];
+
+    try {
+        const { data: current } = await sb
+            .from("daily_stats")
+            .select("*")
+            .eq("user_id", userId)
+            .eq("date", today)
+            .single();
+
+        const base = current || {};
+        const payload = { user_id: userId, date: today };
+
+        for (const key in updates) {
+            payload[key] = (base[key] || 0) + updates[key];
+        }
+
+        const { error } = await sb
+            .from("daily_stats")
+            .upsert(payload, { onConflict: "user_id,date" });
+
+        if (error) throw error;
+        console.log("✅ Stats updated:", updates);
+
+    } catch (err) {
+        console.error("❌ Stats update failed:", err);
+    }
+}
+
+/* ===============================
+   TOAST NOTIFICATION HELPER
+================================*/
+function showToast(message, type = "success") {
+  let toastContainer = document.getElementById("toast-container");
+  if (!toastContainer) {
+    toastContainer = document.createElement("div");
+    toastContainer.id = "toast-container";
+    toastContainer.style.cssText = `
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    `;
+    document.body.appendChild(toastContainer);
+  }
+
+  const toast = document.createElement("div");
+  
+  let bg = "#00C851"; // Green
+  let color = "#fff";
+  
+  if (type === "error") { bg = "#ff4d4d"; }
+  else if (type === "warning") { bg = "#ffca28"; color = "#333"; }
+  
+  toast.innerText = message;
+  toast.style.cssText = `
+    background: ${bg}; color: ${color}; padding: 12px 24px;
+    border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-family: sans-serif; font-weight: 600; font-size: 14px;
+    opacity: 0; transform: translateX(20px); transition: all 0.3s ease;
+    pointer-events: auto;
+  `;
+
+  toastContainer.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  });
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(20px)";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
 /* ===============================

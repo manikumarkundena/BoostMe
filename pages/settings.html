@@ -2,55 +2,230 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BoostMe Settings</title>
-
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
     <link rel="stylesheet" href="../styles/global.css">
     <link rel="stylesheet" href="../styles/settings.css">
-
+    <link rel="stylesheet" href="../styles/modal.css">
+    <script src="../scripts/ui.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
 
 <header class="top-bar">
     <div class="top-left">
-        <img src="../assets/images/boostme-logo.png" class="top-logo">
+        <img src="../assets/images/boostme-logo.png" class="top-logo" alt="Logo">
         <div>
             <div class="top-app-name">BoostMe</div>
             <div class="top-subtext">Settings</div>
         </div>
     </div>
+    
+    <a href="home.html" class="back-btn">
+        <span class="desktop-text">Back to Home</span>
+        <i data-lucide="x" class="mobile-icon"></i>
+    </a>
 </header>
 
 <main class="settings-container">
 
-    <h2 class="settings-title">App Settings ⚙️</h2>
+    <h2 class="settings-title">Settings ⚙️</h2>
 
+    <div class="settings-section-label">Preferences</div>
     <div class="settings-card glass-panel">
-        <h3>Theme</h3>
-        <button onclick="toggleTheme()" class="primary-btn full">Toggle Dark / Light</button>
+        <div class="setting-row">
+            <div>
+                <h3>Dark Mode</h3>
+                <p class="sub-text">Toggle app theme</p>
+            </div>
+            <button onclick="toggleTheme()" class="secondary-btn small" id="themeText">Switch</button>
+        </div>
     </div>
 
+    <div class="settings-section-label">Account</div>
     <div class="settings-card glass-panel">
-        <h3>Edit Profile</h3>
-        <a href="avatar.html" class="primary-btn full">Change Avatar</a>
+        <div class="setting-row">
+            <div>
+                <h3>Personal Info</h3>
+                <p class="sub-text">Name, Avatar, Password</p>
+            </div>
+            <a href="profile.html" class="primary-btn small">Manage</a>
+        </div>
     </div>
 
-    <div class="settings-card glass-panel danger">
-        <h3>Logout</h3>
-        <button onclick="logout()" class="danger-btn full">Logout</button>
+    <div class="settings-section-label">Support & Feedback</div>
+    <div class="settings-card glass-panel">
+        <div style="padding: 5px;">
+            <h3 style="margin-bottom: 8px;">Contact Us</h3>
+            <p class="sub-text" style="margin-bottom: 12px;">Found a bug? Have a feature idea? Let us know!</p>
+            
+            <textarea id="supportMsg" rows="3" placeholder="Type your message here..." 
+                style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--input); color: var(--text); font-family: inherit; resize: vertical;"></textarea>
+            
+            <div style="text-align: right; margin-top: 10px;">
+                <button onclick="sendSupportMessage()" class="primary-btn small" id="sendSupportBtn">
+                    Send Message 🚀
+                </button>
+            </div>
+        </div>
     </div>
 
+    <div class="settings-section-label" style="color: #ff6b6b;">Danger Zone</div>
+    <div class="settings-card glass-panel danger-border">
+        
+        <div class="setting-row">
+            <div>
+                <h3>Sign Out</h3>
+            </div>
+            <button onclick="logout()" class="danger-btn small">Logout</button>
+        </div>
+
+        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0;"></div>
+
+        <div class="setting-row">
+            <div>
+                <h3 style="color: #ff6b6b;">Delete Account</h3>
+                <p class="sub-text">Permanently remove all data</p>
+            </div>
+            <button onclick="deleteAccount()" class="danger-btn small">Delete</button>
+        </div>
+    </div>
+<div style="text-align: center; margin-top: 30px; margin-bottom: 20px; color: var(--text-muted); font-size: 12px; opacity: 0.5;">
+    BoostMe v1.0 • © 2025
+</div>
 </main>
 
-<script>
-async function logout() {
-    await sb.auth.signOut();
-    window.location.href = "home.html";
-}
-</script>
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
 
+<script src="../scripts/config.js"></script>
 <script src="../scripts/supabase.js"></script>
+
+<script>
+    // 1. INITIALIZE THEME & ICONS
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(savedTheme);
+        lucide.createIcons();
+    });
+
+    // 2. TOGGLE THEME
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const btnText = document.getElementById("themeText");
+        if (btnText) {
+            btnText.innerText = theme === 'dark' ? "Switch to Light" : "Switch to Dark";
+        }
+    }
+
+    // 3. LOGOUT
+    async function logout() {
+        const doLogout = await ui.confirm("Sign Out?", "Are you sure you want to log out now?");
+        if (doLogout) {
+            const { error } = await sb.auth.signOut();
+            window.location.href = "login.html"; 
+        }
+    }
+
+    // 4. DELETE ACCOUNT
+    async function deleteAccount() {
+        const doDelete = await ui.confirm("Delete Account", "Are you sure? This cannot be undone.", true);
+        if(doDelete) {
+            await ui.alert("Contact Support", "To delete your account completely, please verify your identity by contacting support below.");
+        }
+    }
+
+    // 5. ✨ SEND SUPPORT MESSAGE LOGIC
+    async function sendSupportMessage() {
+        const box = document.getElementById("supportMsg");
+        const btn = document.getElementById("sendSupportBtn");
+        const msg = box.value.trim();
+
+        if (!msg) {
+            showToast("Please write a message first!", "warning");
+            return;
+        }
+
+        // Get User
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) {
+            showToast("You must be logged in.", "error");
+            return;
+        }
+
+        // UI Loading State
+        const originalText = btn.innerText;
+        btn.innerText = "Sending... ⏳";
+        btn.disabled = true;
+
+        try {
+            // Insert into Supabase
+            const { error } = await sb
+                .from('support_tickets')
+                .insert({
+                    user_id: user.id,
+                    message: msg,
+                    subject: "Settings Form Feedback"
+                });
+
+            if (error) throw error;
+
+            // Success UI
+            box.value = ""; // Clear input
+            await ui.alert("Sent! 📨", "Thanks for reaching out! We'll get back to you soon.");
+            
+        } catch (err) {
+            console.error("Support Error:", err);
+            showToast("Failed to send message.", "error");
+        } finally {
+            // Reset Button
+            btn.innerText = "Sent ✓";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }, 2000);
+        }
+    }
+
+    // 6. TOAST HELPER (Copied from tools.js/chat.js for consistency)
+    function showToast(message, type = "success") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        
+        let bg = "#00C851"; 
+        let color = "#fff";
+        if (type === "error") bg = "#ff4d4d";
+        else if (type === "warning") { bg = "#ffca28"; color = "#333"; }
+        
+        toast.innerText = message;
+        toast.style.cssText = `
+            background: ${bg}; color: ${color}; padding: 12px 24px;
+            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: sans-serif; font-weight: 600; font-size: 14px;
+            opacity: 0; transform: translateX(20px); transition: all 0.3s ease;
+            pointer-events: auto;
+        `;
+        container.appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.style.opacity = "1";
+            toast.style.transform = "translateX(0)";
+        });
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transform = "translateX(20px)";
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+</script>
 
 </body>
 </html>

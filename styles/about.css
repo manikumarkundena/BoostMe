@@ -1,231 +1,245 @@
-/* -------- PAGE BASE -------- */
+/* =========================================
+   1. THEME VARIABLES (Light & Dark)
+   ========================================= */
+:root {
+    /* ☀️ Light Mode Defaults */
+    --page-bg: #f0f2f5;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    
+    --text-main: #1e1e2e;
+    --text-muted: #555;
+    --text-accent: #6c5ce7;
+
+    --chip-bg: rgba(255, 255, 255, 0.8);
+    --chip-text: #444;
+    
+    --social-bg: white;
+    --social-text: #333;
+    --social-hover: #f8f9fa;
+}
+
+/* 🌙 Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --page-bg: #0f172a; /* Deep slate blue */
+        --glass-bg: rgba(30, 41, 59, 0.70); /* Darker glass */
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --shadow-color: rgba(0, 0, 0, 0.4);
+
+        --text-main: #e2e8f0;
+        --text-muted: #94a3b8;
+        --text-accent: #a29bfe; /* Lighter purple for dark mode */
+
+        --chip-bg: rgba(51, 65, 85, 0.8);
+        --chip-text: #cbd5e1;
+
+        --social-bg: #1e293b;
+        --social-text: #e2e8f0;
+        --social-hover: #334155;
+    }
+}
+
+/* =========================================
+   2. GLOBAL LAYOUT
+   ========================================= */
 body {
-    background: #f4f5f8;
-    font-family: "Inter", sans-serif;
+    margin: 0;
+    overflow-x: hidden;
+    font-family: 'Inter', sans-serif;
+    background: var(--page-bg); /* Uses variable */
+    color: var(--text-main);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.about-container {
     display: flex;
     justify-content: center;
-    padding: 50px 20px;
-    color: #2a2a2a;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    z-index: 10;
 }
 
-/* -------- CONTAINER -------- */
-.about-container {
-    max-width: 480px;
+/* =========================================
+   3. THE GLASS CARD 💎
+   ========================================= */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 
+        0 8px 32px var(--shadow-color), 
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
     width: 100%;
+    max-width: 480px;
     text-align: center;
+    animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* -------- AVATAR -------- */
+/* =========================================
+   4. AVATAR & TEXT
+   ========================================= */
+.avatar-wrapper {
+    margin-bottom: 15px;
+    position: relative;
+    display: inline-block;
+}
+
 .dev-avatar {
-    width: 115px;
-    height: 115px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
-    background: #fff;
-    padding: 6px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    margin-bottom: 22px;
+    border: 4px solid var(--social-bg);
+    box-shadow: 0 10px 25px rgba(108, 92, 231, 0.2);
+    transition: transform 0.3s ease;
 }
 
-/* -------- TEXT STYLING -------- */
+.dev-avatar:hover {
+    transform: scale(1.05) rotate(3deg);
+}
+
 .dev-name {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 4px;
+    font-size: 1.8rem;
+    margin: 5px 0;
+    font-weight: 800;
+    
+    /* 🔥 THE FIX FOR YOUR WARNING 🔥 */
+    background: linear-gradient(135deg, var(--text-main) 0%, var(--text-accent) 100%);
+    background-clip: text;          /* Standard property */
+    -webkit-background-clip: text;  /* Vendor prefix */
+    -webkit-text-fill-color: transparent;
 }
 
 .dev-role {
-    font-size: 15px;
-    color: #707070;
-    margin-bottom: 22px;
+    color: var(--text-accent);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* BIO PARAGRAPHS */
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+    margin: 20px 0;
+}
+
 .dev-bio {
-    font-size: 15.5px;
-    line-height: 1.55;
-    margin: 0 auto 18px auto;
-    max-width: 430px;
-    color: #3c3c3c;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
 }
 
-/* -------- STACK CHIPS -------- */
+.dev-bio b {
+    color: var(--text-main);
+}
+
+/* =========================================
+   5. TECH STACK CHIPS
+   ========================================= */
 .stack-row {
     display: flex;
-    justify-content: center;
     flex-wrap: wrap;
-    gap: 10px;
-    margin: 24px 0 32px 0;
+    justify-content: center;
+    gap: 8px;
+    margin: 25px 0;
 }
 
 .stack-chip {
-    background: #ffffff;
-    border-radius: 22px;
-    padding: 8px 16px;
-    font-size: 14px;
-    border: 1px solid #e2e2e2;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    background: var(--chip-bg);
+    border: 1px solid var(--glass-border);
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--chip-text);
+    cursor: default;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px var(--shadow-color);
 }
 
-/* -------- SOCIAL BUTTONS -------- */
-.social-row {
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-    margin-bottom: 18px;
+.stack-chip:hover {
+    transform: translateY(-3px);
+    border-color: var(--text-accent);
+    color: var(--text-accent);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.15);
+}
+
+/* =========================================
+   6. SOCIAL BUTTONS
+   ========================================= */
+.social-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 30px;
 }
 
 .social-btn {
-    padding: 10px 22px;
-    font-size: 15px;
-    border-radius: 10px;
-    background: #eaeaea;
-    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     text-decoration: none;
-    transition: 0.2s ease;
+    background: var(--social-bg);
+    color: var(--social-text);
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid var(--glass-border);
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .social-btn:hover {
-    background: #dcdcdc;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    background: var(--social-hover);
 }
 
+/* Portfolio Button Special Style */
 .social-btn.primary {
-    background: #6265ff;
-    color: #fff;
-}
-
-.social-btn.primary:hover {
-    background: #5457e7;
-}
-
-/* -------- PORTFOLIO BUTTON -------- */
-.portfolio-btn {
-    display: inline-block;
-    padding: 12px 28px;
-    background: #6a6cff;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
     color: white;
-    border-radius: 12px;
-    text-decoration: none;
-    font-size: 16px;
-    margin-bottom: 34px;
-    transition: 0.25s ease;
+    border: none;
+    box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+}
+.social-btn.primary:hover {
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
 }
 
-.portfolio-btn:hover {
-    background: #595bff;
-}
-
-/* -------- BACK LINK -------- */
+/* =========================================
+   7. BACK LINK & ANIMATION
+   ========================================= */
 .back-link {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: #7c4dff;
     text-decoration: none;
-    font-size: 15px;
-    font-weight: 500;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    transition: color 0.2s;
 }
 
 .back-link:hover {
-    opacity: 0.75;
-}
-/* -------- SOCIAL GROUP -------- */
-.social-group {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 10px;
-    margin-bottom: 35px;
+    color: var(--text-main);
 }
 
-/* All Social Buttons equal size */
-.social-btn {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 10px 22px;
-    font-size: 15px;
-    font-weight: 500;
-    border: 1px solid #e2e2e2;
-    color: #333;
-    text-decoration: none;
-    min-width: 110px;       /* keeps all same width */
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    transition: 0.25s ease;
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.social-btn:hover {
-    background: #f1f1f1;
-    transform: translateY(-2px);
-}
-/* -------- SOCIAL GROUP -------- */
-.social-group {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 10px;
-    margin-bottom: 35px;
-}
-
-/* -------- SOCIAL BUTTONS -------- */
-.social-btn {
-    padding: 10px 22px;
-    font-size: 15px;
-    font-weight: 500;
-    border-radius: 12px;
-
-    min-width: 120px;         /* Equal width buttons */
-    text-align: center;
-    text-decoration: none;
-
-    border: 1px solid var(--border);
-    background: var(--card-bg);
-    color: var(--text);
-
-    transition: 0.25s ease-in-out;
-    box-shadow: 0 2px 8px var(--shadow);
-}
-
-/* Hover animation — glow + lift + smooth color */
-.social-btn:hover {
-    transform: translateY(-3px) scale(1.02);
-    background: var(--primary-soft);
-    border-color: var(--primary);
-    box-shadow: 0 6px 16px var(--primary-shadow);
-    color: var(--primary-strong);
-}
-
-/* ACTIVE click effect */
-.social-btn:active {
-    transform: scale(0.97);
-    opacity: 0.85;
-}
-
-/* -------------------------
-   DARK MODE SUPPORT
-   Using CSS variables!
--------------------------- */
-
-:root {
-    --card-bg: #ffffff;
-    --border: #e4e4e4;
-    --text: #222;
-    --shadow: rgba(0,0,0,0.06);
-
-    --primary: #6c63ff;
-    --primary-soft: #efedff;
-    --primary-shadow: rgba(108, 99, 255, 0.25);
-    --primary-strong: #4a43d1;
-}
-
-.dark {
-    --card-bg: #191a1f;
-    --border: #333;
-    --text: #e8e8e8;
-    --shadow: rgba(0,0,0,0.5);
-
-    --primary-soft: #2c2950;
-    --primary-shadow: rgba(118, 92, 255, 0.4);
-    --primary-strong: #a79dff;
+/* Mobile Tweak */
+@media (max-width: 500px) {
+    .glass-card { padding: 25px; }
+    .dev-name { font-size: 1.5rem; }
 }

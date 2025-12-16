@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Avatar – BoostMe</title>
 
     <link rel="stylesheet" href="../styles/global.css">
     <link rel="stylesheet" href="../styles/avatar.css">
-
+    <link rel="stylesheet" href="../styles/modal.css">
+<script src="../scripts/ui.js"></script>
+<link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -17,20 +21,26 @@
         <img src="../assets/images/boostme-logo.png" class="top-logo">
         <div>
             <div class="top-app-name">BoostMe</div>
-            <div class="top-subtext">Choose Your Avatar</div>
+            <div class="top-subtext">Choose Avatar</div>
         </div>
     </div>
+    
+    <a href="home.html" class="back-btn">
+        <span class="desktop-text">Back to Home</span>
+        <i data-lucide="x" class="mobile-icon"></i>
+    </a>
 </header>
 
 <main class="avatar-container">
 
     <h2 class="avatar-title">Pick your vibe ✨</h2>
-
     <p class="avatar-subtitle">Choose a Notion-style avatar. You can change anytime!</p>
 
     <div class="avatar-preview-card glass-panel">
         <img id="avatarPreview" class="avatar-preview-img" src="">
-        <button class="primary-btn save-btn" onclick="saveAvatar()">Save Avatar</button>
+        <button class="primary-btn save-btn" onclick="saveAvatar()">
+            Save Avatar
+        </button>
     </div>
 
     <h3 class="grid-title">Available Avatars</h3>
@@ -41,6 +51,15 @@
 
 <script src="../scripts/supabase.js"></script>
 <script src="../scripts/avatar.js"></script>
+
+<script>
+    // 1. Initialize Theme Immediately
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // 2. Load Icons
+    lucide.createIcons();
+</script>
 
 </body>
 </html>

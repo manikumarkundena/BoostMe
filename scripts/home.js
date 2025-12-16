@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-
+    
+    // --- 1. GREETING LOGIC ---
     const typedTarget = document.getElementById("typedText");
     const subtitle = document.getElementById("greetSubtitle");
 
-    // --- Greeting Logic ---
     function getGreeting() {
         const hour = new Date().getHours();
         if (hour >= 5 && hour < 12) return { title: "Good morning buddy", sub: "A fresh start, let's go! 🌞" };
@@ -12,21 +12,26 @@ document.addEventListener("DOMContentLoaded", () => {
         return { title: "Hey buddy!", sub: "Late hours hustle mode 🌙" };
     }
 
-    const greet = getGreeting();
-    subtitle.textContent = greet.sub;
+    if (typedTarget && subtitle) {
+        const greet = getGreeting();
+        subtitle.textContent = greet.sub;
 
-    // --- Smooth Typing Effect ---
-    let delay = 0;
-    greet.title.split("").forEach(char => {
-        const span = document.createElement("span");
-        span.className = "char";
-        span.innerHTML = char === " " ? "&nbsp;" : char;
-        span.style.animationDelay = `${delay}s`;
-        delay += 0.06;
-        typedTarget.appendChild(span);
-    });
+        // --- Smooth Typing Effect ---
+        let delay = 0;
+        greet.title.split("").forEach(char => {
+            const span = document.createElement("span");
+            span.className = "char";
+            span.innerHTML = char === " " ? "&nbsp;" : char;
+            span.style.animationDelay = `${delay}s`;
+            delay += 0.06;
+            typedTarget.appendChild(span);
+        });
+    }
 
+    // --- 2. SETUP NAVBAR USER ---
+    setupNavbar();
 });
+
 /* ===============================
    📸 HIGH-TECH SCANNER LOGIC
 ================================*/
@@ -45,31 +50,36 @@ async function openScanner() {
     const status = document.getElementById("scanStatus");
     const hudText = document.getElementById("hudDataText");
 
+    if (!modal) return;
     modal.style.display = "flex";
 
     // 1. Matrix Text Effect
     let logIndex = 0;
     hudInterval = setInterval(() => {
         const rand = Math.floor(Math.random() * 9999);
-        hudText.innerHTML = `${SCIFI_LOGS[logIndex % SCIFI_LOGS.length]}<br>HEX: 0x${rand}<br>CPU: ${Math.floor(Math.random()*100)}%`;
+        if(hudText) hudText.innerHTML = `${SCIFI_LOGS[logIndex % SCIFI_LOGS.length]}<br>HEX: 0x${rand}<br>CPU: ${Math.floor(Math.random()*100)}%`;
         logIndex++;
     }, 400);
 
     try {
         // 2. Start Camera
         videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = videoStream;
+        if(video) video.srcObject = videoStream;
 
         // 3. Run "Scan Sequence"
-        status.innerText = "Target Found. Holding...";
+        if(status) status.innerText = "Target Found. Holding...";
         await wait(1500);
 
-        status.style.color = "#ffff00"; // Yellow
-        status.innerText = "Analyzing Expressions...";
+        if(status) {
+            status.style.color = "#ffff00"; // Yellow
+            status.innerText = "Analyzing Expressions...";
+        }
         await wait(2000);
 
-        status.style.color = "#00ffff"; // Cyan
-        status.innerText = "Processing Results...";
+        if(status) {
+            status.style.color = "#00ffff"; // Cyan
+            status.innerText = "Processing Results...";
+        }
         await wait(1500);
 
         // 4. Complete & Apply Theme
@@ -77,14 +87,15 @@ async function openScanner() {
 
     } catch (err) {
         console.error(err);
-        alert("Camera access needed for Vibe Check!");
+        if (window.ui) await ui.alert("Camera Error", "Camera access needed for Vibe Check!");
+        else alert("Camera access needed!");
         closeScanner();
     }
 }
 
 function closeScanner() {
     const modal = document.getElementById("scannerModal");
-    modal.style.display = "none";
+    if(modal) modal.style.display = "none";
     
     if (videoStream) videoStream.getTracks().forEach(track => track.stop());
     if (hudInterval) clearInterval(hudInterval);
@@ -103,25 +114,30 @@ function completeRefinedScan() {
 
     // Show Result
     const status = document.getElementById("scanStatus");
-    status.innerHTML = `DETECTED: <span style="color:${result.color}">${result.name}</span>`;
+    if(status) status.innerHTML = `DETECTED: <span style="color:${result.color}">${result.name}</span>`;
     
-    setTimeout(() => {
-        alert(`Vibe Check Complete!\nMood: ${result.name}\n${result.msg}`);
+    setTimeout(async () => {
+        closeScanner();
+        
+        // ✨ NEW: Glass Alert for Result
+        if (window.ui) {
+            await ui.alert("Vibe Check Complete", `Mood: ${result.name}\n${result.msg}`);
+        } else {
+            alert(`Vibe Check Complete!\nMood: ${result.name}\n${result.msg}`);
+        }
         
         // 🎨 REAL-TIME THEME SWITCH
         document.documentElement.style.setProperty('--primary', result.color);
         
-        // Update logo color or accents if needed
-        closeScanner();
     }, 1000);
-    /* ... (Your existing Greeting & Scanner code) ... */
+}
 
 /* ===============================
    ⚡ QUICK CHALLENGE (Redirect)
 ================================*/
 function manualChallenge() {
-    // 1. Play Sound
-    if(window.synth) window.synth.click();
+    // 1. Play Sound if available
+    // if(window.synth) window.synth.click();
 
     // 2. Set a "flag" so chat.html knows to auto-start a challenge
     localStorage.setItem("auto_trigger_challenge", "true");
@@ -129,16 +145,11 @@ function manualChallenge() {
     // 3. Redirect to Chat
     window.location.href = "chat.html";
 }
-}
-
-/* ... existing greeting and scanner code ... */
 
 /* ===============================
-   👨‍💻 ABOUT MODAL LOGIC
+   👨‍💻 ABOUT MODAL LOGIC (Optional if handled by CSS)
 ================================*/
 function openAboutModal() {
-    if(window.synth) window.synth.click(); // Play sound
-    
     const modal = document.getElementById("aboutModal");
     if(modal) {
         modal.style.display = "flex";
@@ -162,4 +173,33 @@ window.addEventListener("click", (e) => {
     }
 });
 
+/* ===============================
+   HELPER: WAIT PROMISE
+================================*/
 function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ===============================
+   NAVBAR AVATAR SETUP
+================================*/
+async function setupNavbar() {
+    const userImg = document.querySelector(".nav-user-img");
+    if (!userImg || !window.sb) return;
+
+    // Check if user is logged in
+    const { data: { user } } = await sb.auth.getUser();
+    
+    if (user) {
+        // Try to get profile pic
+        const { data: profile } = await sb
+            .from('profiles')
+            .select('avatar_url')
+            .eq('id', user.id)
+            .single();
+
+        if (profile && profile.avatar_url) {
+            userImg.src = profile.avatar_url;
+        } else if (user.user_metadata && user.user_metadata.avatar_url) {
+            userImg.src = user.user_metadata.avatar_url;
+        }
+    }
+}

@@ -788,3 +788,37 @@ button:active, .tool-card:active, .nav-item:active {
     visibility: visible;
     opacity: 1;
 }
+
+/* Dashboard Button Styling */
+.nav-dash-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: #f3f4f6; /* Light Gray (Normal) */
+    color: #374151; /* Dark Gray Icon */
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-right: 12px; /* Space between dash and profile */
+}
+
+/* Hover & Active State */
+.nav-dash-btn:hover, 
+.nav-dash-btn.active {
+    background-color: #6c63ff; /* Brand Purple */
+    color: white; /* White Icon */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+}
+
+/* Dark Mode Support (Optional) */
+[data-theme="dark"] .nav-dash-btn {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+[data-theme="dark"] .nav-dash-btn:hover {
+    background-color: #6c63ff;
+    color: white;
+}

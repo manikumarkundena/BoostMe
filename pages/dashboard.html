@@ -2,13 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>BoostMe – Stats</title>
-  <script src="https://unpkg.com/lucide@latest"></script>
-
+  <title>BoostMe – Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../assets/images/favicon.png">
   <link rel="stylesheet" href="../styles/global.css">
   <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/modal.css">
+<script src="../scripts/ui.js"></script>
   <link rel="stylesheet" href="../styles/dashboard.css">
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 
 <body>
 
@@ -20,95 +25,86 @@
             <div class="top-subtext">Productivity OS</div>
         </div>
     </div>
-
-    <!-- 🔥 THIS IS IMPORTANT -->
-    <div class="top-right" id="navbar-right">
-        <!-- navbar.js injects content here -->
-    </div>
-</header>
-
+    <div class="top-right" id="navbar-right"></div>
+  </header>
 
   <main class="page-content">
+    <div id="insightSection" class="insight-card" style="display:none;">
+    <i data-lucide="sparkles" class="insight-icon"></i>
+    <div class="insight-content">
+        <h4>Daily Insight</h4>
+        <p id="insightText">Loading...</p>
+    </div>
+</div>
 
-    <h2 class="section-heading">Today</h2>
-
+    <h2 class="section-heading">Today's Snapshot</h2>
     <div class="stats-row">
-
       <div class="stat-card">
         <div class="stat-label">Focus Time</div>
-        <div class="stat-value focus-time">0 min</div>
+        <div class="stat-value" id="val-focus">0m</div>
       </div>
-
       <div class="stat-card">
-        <div class="stat-label">Challenges Done</div>
-        <div class="stat-value challenges">0</div>
+        <div class="stat-label">Games</div>
+        <div class="stat-value" id="val-games">0</div>
       </div>
-
       <div class="stat-card">
-        <div class="stat-label">Streak</div>
-        <div class="stat-value streak">0 days</div>
+        <div class="stat-label">Challenges</div>
+        <div class="stat-value" id="val-challenges">0</div>
       </div>
-
+      <div class="stat-card">
+        <div class="stat-label">Tasks</div>
+        <div class="stat-value" id="val-tasks">0</div>
+      </div>
     </div>
 
-    <h2 class="section-heading" style="margin-top:22px;">Week Overview</h2>
+    <div class="charts-wrapper">
+        <div>
+            <h2 class="section-heading">Weekly Focus</h2>
+            <div class="chart-card">
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
 
-    <div class="chart-container">
-      <canvas id="focusChart"></canvas>
+        <div>
+            <h2 class="section-heading">Focus vs Chill</h2>
+            <div class="chart-card">
+                <canvas id="balanceChart"></canvas>
+            </div>
+        </div>
     </div>
+    
+    <div id="levelContainer" style="margin-top: 30px; text-align: center;"></div>
 
   </main>
 
-  <nav class="bottom-nav">
+<nav class="bottom-nav">
     <a href="home.html" class="nav-item">
-        <img src="../assets/icons/home.png" class="nav-icon">
-        <small>Home</small>
+        <img src="../assets/icons/home.png" class="nav-icon"><small>Home</small>
     </a>
-
     <a href="chat.html" class="nav-item">
-        <img src="../assets/icons/chat.png" class="nav-icon">
-        <small>Chat</small>
+        <img src="../assets/icons/chat.png" class="nav-icon"><small>Chat</small>
     </a>
-
     <a href="focus.html" class="nav-item">
-        <img src="../assets/icons/focus.png" class="nav-icon">
-        <small>Focus</small>
+        <img src="../assets/icons/focus.png" class="nav-icon"><small>Focus</small>
     </a>
     <a href="chill.html" class="nav-item">
         <img src="../assets/icons/chill.png" class="nav-icon"><small>Chill</small>
     </a>
-
     <a href="tools.html" class="nav-item">
-        <img src="../assets/icons/tools.png" class="nav-icon">
-        <small>Tools</small>
+        <img src="../assets/icons/tools.png" class="nav-icon"><small>Tools</small>
     </a>
+</nav>
 
-   
-  </nav>
-  <!-- 1️⃣ External libraries -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- 2️⃣ App config -->
 <script src="../scripts/config.js"></script>
-
-<!-- 3️⃣ Supabase client -->
 <script src="../scripts/supabase.js"></script>
-
-<!-- 4️⃣ Navbar (login / profile / dashboard / theme) -->
 <script src="../scripts/navbar.js"></script>
-
-<!-- 5️⃣ Helpers -->
 <script src="../scripts/utils.js"></script>
-<script src="../scripts/sound.js"></script>
-
-<!-- 6️⃣ Page logic -->
 <script src="../scripts/dashboard.js"></script>
 
-<script>
-  lucide.createIcons();
-</script>
-
+<script>lucide.createIcons();</script>
 </body>
 </html>

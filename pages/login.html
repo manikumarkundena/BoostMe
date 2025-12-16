@@ -6,6 +6,9 @@
     <link rel="stylesheet" href="../styles/global.css">
     <link rel="stylesheet" href="../styles/login.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="../styles/modal.css">
+<script src="../scripts/ui.js"></script>
+<link rel="icon" type="image/png" href="../assets/images/favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -45,15 +48,34 @@
                 </div>
 
                 <div class="input-group">
-                    <i data-lucide="lock" class="input-icon"></i>
-                    <input type="password" id="passwordInput" placeholder="Password">
-                    <button id="togglePass" class="eye-btn"><i data-lucide="eye"></i></button>
-                </div>
+    <i data-lucide="lock" class="input-icon"></i>
+    <input type="password" id="passwordInput" placeholder="Password">
+    <button id="togglePass" class="eye-btn"><i data-lucide="eye"></i></button>
+</div>
+<div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
+    <span id="forgotPassBtn" class="link" style="font-size: 0.85rem; color: #ccc; cursor: pointer;">Forgot Password?</span>
+</div>
 
                 <button id="authBtn" class="primary-btn full-width">
                     Login
                 </button>
             </div>
+            <div id="resetSection" style="display:none; text-align: center;">
+    <div class="input-group">
+        <i data-lucide="mail" class="input-icon"></i>
+        <input type="email" id="resetEmailInput" placeholder="Enter your email">
+    </div>
+
+    <button id="sendResetBtn" class="primary-btn full-width" style="margin-top: 15px;">
+        Send Reset Link
+    </button>
+
+    <p style="margin-top: 20px; font-size: 0.9rem;">
+        <span id="backToLoginBtn" class="link" style="cursor: pointer;">
+            ← Back to Login
+        </span>
+    </p>
+</div>
 
             <div class="login-footer">
                 <p id="toggleText">Don't have an account? <span id="toggleLink" class="link">Sign Up</span></p>

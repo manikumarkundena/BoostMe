@@ -5,25 +5,62 @@
     <title>BoostMe – Chat</title>
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <style>
-        .icon-btn-small {
-            width: 40px; height: 40px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: var(--input); color: var(--text);
-            text-decoration: none; transition: 0.2s;
-        }
-        .icon-btn-small:hover { background: var(--primary); color: white; }
-    </style>
-
+    <link rel="stylesheet" href="../styles/modal.css">
     <link rel="stylesheet" href="../styles/global.css">
     <link rel="stylesheet" href="../styles/chat.css">
+    <script src="../scripts/ui.js"></script>
+<link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    <style>
+        /* --- 1. NAVBAR ADJUSTMENTS --- */
+        .top-bar {
+            position: relative; /* Needed to center the history button */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px; /* Adjust as per your global.css */
+        }
+
+        /* --- 2. CENTERED HISTORY BUTTON --- */
+        .center-nav-btn {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%); /* Perfectly Centers it */
+            
+            /* Styling to match Dashboard Button */
+            width: 42px; 
+            height: 42px; 
+            border-radius: 50%;
+            background-color: #f3f4f6; /* Light Gray */
+            color: #374151;
+            border: none;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* Hover Effect */
+        .center-nav-btn:hover {
+            background-color: #6c63ff; /* Brand Purple */
+            color: white;
+            transform: translateX(-50%) translateY(-2px); /* Maintain center + lift */
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+        }
+
+        /* Dark Mode Support */
+        [data-theme="dark"] .center-nav-btn {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+        [data-theme="dark"] .center-nav-btn:hover {
+            background-color: #6c63ff;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
-
-<!-- ===============================
-        TOP BAR
-================================= -->
 
 <header class="top-bar">
     <div class="top-left">
@@ -34,32 +71,24 @@
         </div>
     </div>
 
+    <button id="historyBtn" class="center-nav-btn" title="View Chat History">
+       <i data-lucide="history" width="22"></i>
+    </button>
+
     <div class="header-actions">
-        
-        <button id="historyBtn" class="floating-history-btn">
-           <i data-lucide="history"></i>
-        </button>
-
-        <div id="navbar-right">
-            </div>
-
+        <div id="navbar-right"></div>
     </div>
 </header>
 
 
-<!-- ===============================
-        MAIN PAGE CONTENT
-================================= -->
 <main class="page-content">
 
-    <!-- Suggestion Chips -->
     <div class="suggestions">
         <button class="chip">I’m feeling distracted</button>
         <button class="chip">Give me a study tip</button>
         <button class="chip">Boost my mood</button>
     </div>
 
-    <!-- Chat Box -->
     <div id="chatBox" class="chat-box">
         <div class="ai-bubble">
             Hey dude 👋<br>
@@ -72,9 +101,6 @@
 <audio id="timerSound" src="../assets/sounds/alert.mp3"></audio>
 
 
-<!-- ===============================
-        INPUT ROW
-================================= -->
 <div class="chat-input-area">
     <button id="chatVoiceBtn" class="icon-btn secondary-icon">
         <span id="voiceStatus"></span>
@@ -89,17 +115,11 @@
 </div>
 
 
-<!-- ===============================
-       FLOATING QUICK CHALLENGE BTN
-================================= -->
 <button class="floating-quick-btn" onclick="manualChallenge()">
     ⚡ Quick Challenge
 </button>
 
 
-<!-- ===============================
-        BOTTOM NAV
-================================= -->
 <nav class="bottom-nav">
     <a href="home.html" class="nav-item">
         <img src="../assets/icons/home.png" class="nav-icon"><small>Home</small>
@@ -123,16 +143,12 @@
 </nav>
 
 
-<!-- ===============================
-        CHAT HISTORY MODAL
-================================= -->
 <div id="historyModal" class="history-modal">
     <div class="history-content">
         <h2>Your Chat History</h2>
 
         <div id="historyList" class="history-list">
-            <!-- Loaded dynamically -->
-        </div>
+            </div>
 
         <div class="history-actions">
             <button id="clearHistoryBtn" class="danger-btn">Clear All History</button>
@@ -142,26 +158,12 @@
 </div>
 
 
-<!-- ===============================
-        JS SCRIPTS — ORDER MATTERS!
-================================= -->
-<!-- 1️⃣ Core libs -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- 2️⃣ App config -->
 <script src="../scripts/config.js"></script>
-
-<!-- 3️⃣ Supabase client (sb created here) -->
 <script src="../scripts/supabase.js"></script>
-
-<!-- 4️⃣ Navbar (depends on sb) -->
 <script src="../scripts/navbar.js"></script>
-
-<!-- 5️⃣ Utilities -->
 <script src="../scripts/utils.js"></script>
 <script src="../scripts/sound.js"></script>
-
-<!-- 6️⃣ Page logic -->
 <script src="../scripts/chat.js"></script>
 
 <script>

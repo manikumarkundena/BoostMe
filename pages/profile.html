@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    <link rel="stylesheet" href="../styles/profile.css">
+    <link rel="stylesheet" href="../styles/modal.css">
+<script src="../scripts/ui.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  
+    <header class="top-bar">
+        <div class="top-left">
+            <a href="home.html" class="back-link">
+                <i data-lucide="arrow-left"></i> Back
+            </a>
+        </div>
+        <div class="top-title">My Profile</div>
+        <div style="width: 60px;"></div>
+    </header>
+
+    <main class="settings-container">
+        <div class="glass-panel">
+            
+            <div class="profile-header">
+                <img id="profileAvatarDisplay" src="../assets/avatars/default.png" class="profile-big-avatar">
+                <h2 id="profileNameDisplay">Loading...</h2>
+                <p id="profileEmailDisplay">...</p>
+            </div>
+
+            <div class="form-section">
+                <div class="section-label">Public Details</div>
+                
+                <div class="input-group">
+                    <input type="text" id="editName" placeholder="Display Name">
+                    <i data-lucide="user"></i>
+                </div>
+                
+                <button onclick="updateProfile()" id="saveProfileBtn" class="primary-btn">
+                    Save Details
+                </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="form-section">
+                <div class="section-label">Security</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+                    Enter a new password below to change it.
+                </p>
+
+                <div class="input-group">
+                    <input type="password" id="newPassword" placeholder="New Password">
+                    <i data-lucide="lock"></i>
+                </div>
+                
+                <button onclick="changePassword()" id="passBtn" class="secondary-btn">
+                    Update Password
+                </button>
+            </div>
+
+        </div>
+        <div style="text-align: center; margin-top: 30px; margin-bottom: 20px; color: var(--text-muted); font-size: 12px; opacity: 0.5;">
+    BoostMe v1.0 • © 2025
+</div>
+    </main>
+
+    <script src="../scripts/supabase.js"></script>
+    
+    <script>
+        // 1. Theme Init
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        lucide.createIcons();
+
+        // 2. Load Data (FIXED LOGIC)
+        document.addEventListener("DOMContentLoaded", async () => {
+            const { data: { user } } = await sb.auth.getUser();
+            
+            if (!user) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            // A. Set Email
+            document.getElementById("profileEmailDisplay").innerText = user.email;
+
+            // B. Determine Defaults from User Metadata
+            let currentName = user.user_metadata.full_name || "User";
+            let currentAvatar = user.user_metadata.avatar_url || "../assets/avatars/default.png";
+
+            // C. Check 'profiles' table for overrides
+            const { data: profile } = await sb
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                if(profile.display_name) currentName = profile.display_name;
+                if(profile.avatar_url) currentAvatar = profile.avatar_url;
+            }
+
+            // D. UPDATE UI (Now runs every time)
+            document.getElementById("profileNameDisplay").innerText = currentName;
+            document.getElementById("editName").value = currentName;
+            document.getElementById("profileAvatarDisplay").src = currentAvatar;
+        });
+
+        async function updateProfile() {
+            const btn = document.getElementById("saveProfileBtn");
+            const newName = document.getElementById("editName").value;
+            const originalText = btn.innerText;
+
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            const { data: { user } } = await sb.auth.getUser();
+
+            // Upsert handles both insert (if missing) and update
+            const { error } = await sb
+                .from('profiles')
+                .upsert({ 
+                    id: user.id,
+                    display_name: newName,
+                    // Persist existing avatar if we aren't changing it here
+                    avatar_url: document.getElementById("profileAvatarDisplay").src
+                });
+
+            if (error) {
+                alert("Error: " + error.message);
+            } else {
+                alert("✅ Profile Updated!");
+                document.getElementById("profileNameDisplay").innerText = newName;
+            }
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+
+        async function changePassword() {
+            const newPass = document.getElementById("newPassword").value;
+            const btn = document.getElementById("passBtn");
+
+            if (!newPass || newPass.length < 6) {
+                alert("Password must be at least 6 characters.");
+                return;
+            }
+
+            btn.innerText = "Updating...";
+            btn.disabled = true;
+
+            const { error } = await sb.auth.updateUser({ password: newPass });
+
+            if (error) {
+                alert("Error: " + error.message);
+            } else {
+                alert("✅ Password Changed Successfully!");
+                document.getElementById("newPassword").value = "";
+            }
+            btn.innerText = "Update Password";
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>

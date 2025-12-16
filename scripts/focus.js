@@ -1,9 +1,11 @@
 /* ===============================
+   BoostMe — focus.js (FINAL - MODALS & TOASTS)
+================================*/
+
+/* ===============================
    TIMER VARIABLES
 ================================*/
-console.log("🧪 DEBUG START");
-console.log("currentUser:", window.currentUser);
-console.log("sb exists:", !!window.sb);
+console.log("🧪 DEBUG START - Focus Module");
 
 let totalSeconds = 1500;
 let remaining = totalSeconds;
@@ -131,15 +133,15 @@ function startTimer() {
 }
 
 /* ===============================
-   🏁 FINISH TIMER (Fixed)
+   🏁 FINISH TIMER
 ================================*/
 function finishTimer() {
     console.log("🔥 finishTimer() called");
 
-    // FIX 1: Convert seconds to minutes for DB
+    // 1. Convert to minutes
     const minutesCompleted = Math.floor(totalSeconds / 60);
 
-    // FIX 2: Call the global function with correct key 'focusMinutes'
+    // 2. Save Stats (if helper exists)
     if (window.saveDailyStats) {
         window.saveDailyStats({ focusMinutes: minutesCompleted });
     }
@@ -148,24 +150,22 @@ function finishTimer() {
     running = false;
     stopBeep();
     
-    // 🔊 PLAY SUCCESS CHORD
+    // 3. 🔊 PLAY SUCCESS CHORD
     if(window.synth) window.synth.success();
     vibrate([200, 100, 200]);
 
-    // Local Storage Backup
+    // 4. Local Storage Backup
     const currentTotal = parseInt(localStorage.getItem("focus-minutes") || 0);
     localStorage.setItem("focus-minutes", currentTotal + minutesCompleted);
 
-    // Reset UI
+    // 5. Reset UI
     startBtn.innerHTML = `<i data-lucide="zap"></i> <span>Ignite</span>`;
     stopBtn.style.display = "none";
     lockPresets(false);
     if(window.lucide) lucide.createIcons();
 
-    // Small delay for alert so sound plays first
-    setTimeout(() => {
-        alert("🔥 Core Stabilized! Focus Session Complete.");
-    }, 500);
+    // 6. ✨ TOAST NOTIFICATION (Instead of Alert)
+    showToast(`🔥 Core Stabilized! +${minutesCompleted} mins added.`, "success");
 }
 
 /* ===============================
@@ -184,13 +184,22 @@ function pauseTimer() {
 }
 
 /* ===============================
-   STOP TIMER (ABORT)
+   STOP TIMER (ABORT) - WITH MODAL
 ================================*/
-function fullStop() {
+async function fullStop() {
     // 🔊 Sound Effect
     if(window.synth) window.synth.error();
 
-    if(!confirm("⚠️ Abort mission? Progress will be lost.")) return;
+    // ✨ NEW: Glass UI Confirmation
+    let confirmed = false;
+    if (window.ui) {
+        // Red button logic (true as 3rd arg)
+        confirmed = await ui.confirm("Abort Mission?", "Are you sure? Current progress will be lost.", true);
+    } else {
+        confirmed = confirm("⚠️ Abort mission? Progress will be lost.");
+    }
+
+    if (!confirmed) return;
 
     running = false;
     clearInterval(timer);
@@ -203,6 +212,8 @@ function fullStop() {
     stopBtn.style.display = "none";
     lockPresets(false);
     if(window.lucide) lucide.createIcons();
+
+    showToast("Timer stopped.", "warning");
 }
 
 /* ===============================
@@ -267,7 +278,12 @@ if(applyBtn) {
         if(window.synth) window.synth.click();
 
         const val = parseInt(document.getElementById("inlineCustomMin").value);
-        if (!val || val < 1) return;
+        
+        // Validation with Toast
+        if (!val || val < 1) {
+            showToast("Please enter at least 1 minute.", "warning");
+            return;
+        }
         
         totalSeconds = val * 60;
         remaining = totalSeconds;
@@ -279,3 +295,50 @@ if(applyBtn) {
 
 /* INIT */
 updateUI();
+
+
+/* ===============================
+   TOAST NOTIFICATION HELPER
+================================*/
+function showToast(message, type = "success") {
+  let toastContainer = document.getElementById("toast-container");
+  if (!toastContainer) {
+    toastContainer = document.createElement("div");
+    toastContainer.id = "toast-container";
+    toastContainer.style.cssText = `
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    `;
+    document.body.appendChild(toastContainer);
+  }
+
+  const toast = document.createElement("div");
+  
+  let bg = "#00C851"; // Green
+  let color = "#fff";
+  
+  if (type === "error") { bg = "#ff4d4d"; }
+  else if (type === "warning") { bg = "#ffca28"; color = "#333"; }
+  
+  toast.innerText = message;
+  toast.style.cssText = `
+    background: ${bg}; color: ${color}; padding: 12px 24px;
+    border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-family: sans-serif; font-weight: 600; font-size: 14px;
+    opacity: 0; transform: translateX(20px); transition: all 0.3s ease;
+    pointer-events: auto;
+  `;
+
+  toastContainer.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  });
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(20px)";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}

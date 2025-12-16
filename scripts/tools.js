@@ -13,14 +13,15 @@ const runBtn = document.getElementById("runToolBtn");
 const toolTitleEl = document.getElementById("toolTitle");
 const toolHintEl = document.querySelector(".tool-hint");
 
-// History Modal Elements (Assumed to exist per requirements)
+// History Modal Elements
 const historyBtn = document.getElementById("toolHistoryBtn");
 const historyModal = document.getElementById("toolHistoryModal");
 const historyList = document.getElementById("toolHistoryList");
-const closeHistoryBtn = document.getElementById("closeHistoryBtn"); // Assuming a close button exists inside modal
+const closeHistoryBtn = document.getElementById("closeHistoryBtn");
+const clearToolHistoryBtn = document.getElementById("clearToolHistoryBtn");
 
 /* =========================================================
-   1. SYSTEM PROMPT (ENGLISH ONLY — DO NOT REMOVE)
+   1. SYSTEM PROMPT
 ========================================================= */
 const BASE_SYSTEM_PROMPT = `
 You are **BoostMe Tools**, a friendly but highly skilled AI assistant 🤝.
@@ -41,7 +42,7 @@ code here
 `;
 
 /* =========================================================
-   TOOL ROLES (POLISHED)
+   TOOL ROLES
 ========================================================= */
 const TOOL_DEFINITIONS = {
   planner: `
@@ -50,28 +51,24 @@ You are a **Productivity Coach 🕒**
 - Use time blocks, breaks & emojis
 - Avoid overload
 `,
-
   writer: `
 You are a **Creative Content Writer ✍️**
 - Give 2 versions (Formal & Creative)
 - Use engaging hooks
 - Improve clarity & flow
 `,
-
   study: `
 You are a **Study Buddy 📚**
 - Explain like I’m 10
 - Use real-life analogies
 - End with a 2–3 question mini quiz
 `,
-
   ideas: `
 You are an **Idea Machine 💡**
 - Give fresh, trendy ideas
 - Avoid generic suggestions
 - Explain WHY each idea works
 `,
-
   dev: `
 You are a **Senior Developer 👨‍💻**
 - Explain errors simply
@@ -89,17 +86,12 @@ const PLACEHOLDERS = {
 };
 
 /* =========================================================
-   2. SUPABASE HISTORY INTEGRATION (NEW)
+   2. SUPABASE HISTORY INTEGRATION
 ========================================================= */
 
-/**
- * Saves the tool usage to Supabase `tool_history` table.
- * Designed to be "Fire and Forget" to not block UI.
- */
 async function saveToolEntry(tool, input, output) {
-  // Guard clause: Ensure user is logged in and sb client exists
   if (!window.sb || !window.currentUser) {
-    console.warn("Cannot save history: User not logged in or Supabase not initialized.");
+    console.warn("Cannot save history: User not logged in.");
     return;
   }
 
@@ -109,7 +101,7 @@ async function saveToolEntry(tool, input, output) {
       tool: tool,
       input_text: input,
       output_text: output,
-      meta: { page: "tools", version: "v1" } // metadata
+      meta: { page: "tools", version: "v1" }
     });
 
     if (error) throw error;
@@ -119,10 +111,6 @@ async function saveToolEntry(tool, input, output) {
   }
 }
 
-/**
- * Loads history for the current user.
- * Orders by newest first.
- */
 async function loadToolHistory() {
   if (!window.sb || !window.currentUser) return [];
 
@@ -134,9 +122,8 @@ async function loadToolHistory() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-
     console.log("📂 History loaded:", data);
-    return data; // Return data for the UI renderer
+    return data;
   } catch (err) {
     console.error("❌ Error loading history:", err.message);
     return [];
@@ -206,7 +193,7 @@ async function callAI(messages) {
 }
 
 /* =========================================================
-   5. RUN TOOL (MODIFIED)
+   5. RUN TOOL
 ========================================================= */
 async function handleRunTool() {
   if (isLoading || !selectedTool) return;
@@ -229,8 +216,7 @@ async function handleRunTool() {
   conversationHistory.push({ role: "assistant", content: reply });
   appendMessage("ai", reply);
 
-  // --- SAVE HISTORY (NEW) ---
-  // We do not await this, so UI stays snappy
+  // Save history (Fire & Forget)
   saveToolEntry(selectedTool, text, reply);
 
   runBtn.innerHTML = "Run ✨";
@@ -334,25 +320,25 @@ function wireCopyButtons(container) {
 }
 
 /* =========================================================
-   8. HISTORY MODAL LOGIC (NEW)
+   8. HISTORY MODAL LOGIC (IMPROVED UI FLOW)
 ========================================================= */
 
-// Event Listeners for Modal
-if (historyBtn) {
-  historyBtn.onclick = openToolHistory;
-}
-if (closeHistoryBtn) {
-  closeHistoryBtn.onclick = closeToolHistory;
-}
-// Close on outside click
+if (historyBtn) historyBtn.onclick = openToolHistory;
+if (closeHistoryBtn) closeHistoryBtn.onclick = closeToolHistory;
+
 window.addEventListener("click", (e) => {
   if (e.target === historyModal) closeToolHistory();
 });
 
 async function openToolHistory() {
   if (!historyModal) return;
-  historyModal.style.display = "block"; // Or add a class .show
   
+  if (!window.currentUser) {
+      showToast("Please login to view history.", "error");
+      return;
+  }
+
+  historyModal.style.display = "block";
   if (historyList) {
     historyList.innerHTML = "<p>Loading history...</p>";
     const historyData = await loadToolHistory();
@@ -374,7 +360,6 @@ function renderHistoryList(data) {
     return;
   }
 
-  // Group by date logic (Today, Yesterday, Older)
   const grouped = { Today: [], Yesterday: [], Older: [] };
   const today = new Date().toDateString();
   const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -386,7 +371,6 @@ function renderHistoryList(data) {
     else grouped.Older.push(item);
   });
 
-  // Render Logic
   Object.keys(grouped).forEach(key => {
     if (grouped[key].length > 0) {
       const header = document.createElement("h4");
@@ -397,7 +381,6 @@ function renderHistoryList(data) {
       grouped[key].forEach(item => {
         const div = document.createElement("div");
         div.className = "history-item";
-        // Create a summary snippet
         div.innerHTML = `
           <span class="history-tool-badge">${item.tool}</span>
           <span class="history-query">${escapeHtml(item.input_text.substring(0, 40))}...</span>
@@ -409,26 +392,16 @@ function renderHistoryList(data) {
   });
 }
 
-/**
- * Optional: Clicking a history item re-displays it in the main view
- * This is a bonus UX improvement
- */
 function loadHistoryItemToView(item) {
-  // Switch to the correct tool context
   if (selectedTool !== item.tool) {
-    // Ideally select the tool card, but here we just set state
     selectedTool = item.tool;
-    // Note: We might want to trigger the UI click here in a full implementation
   }
-
   closeToolHistory();
-  outputBox.innerHTML = ""; // Clear current view
+  outputBox.innerHTML = "";
   
-  // Re-inject history into view
   appendMessage("user", item.input_text);
   appendMessage("ai", item.output_text);
   
-  // Update system context
   conversationHistory = [
     { role: "system", content: BASE_SYSTEM_PROMPT + "\n\nCURRENT ROLE:\n" + TOOL_DEFINITIONS[item.tool] },
     { role: "user", content: item.input_text },
@@ -438,25 +411,85 @@ function loadHistoryItemToView(item) {
   if (window.Prism) Prism.highlightAll();
 }
 
-/* =========================================================
-   9. 🎤 VOICE INPUT
-========================================================= */
+// ✨ FIXED CLEAR HISTORY LOGIC (Removes Overlap)
+if (clearToolHistoryBtn) {
+  clearToolHistoryBtn.onclick = async () => {
+    if (!window.currentUser) {
+        showToast("Please login first!", "error");
+        return;
+    }
 
+    // 0️⃣ GUARD: IS IT LOADING?
+    if (historyList.innerText.includes("Loading...")) {
+      return; 
+    }
+
+    // 1️⃣ CHECK IF EMPTY
+    const hasItems = historyList.querySelectorAll('.history-item').length > 0;
+    
+    if (!hasItems) {
+      showToast("Nothing to delete! Your history is clean ✨", "warning");
+      return;
+    }
+
+    // 2️⃣ HIDE THE LIST to prevent visual overlap
+    // This solves the "dominating" issue by clearing the stage for the confirmation
+    closeToolHistory();
+
+    // 3️⃣ CONFIRMATION
+    let confirmed = false;
+    if (window.ui) {
+        confirmed = await ui.confirm("Clear History?", "Are you sure? This deletes ALL tool history permanently.", true);
+    } else {
+        confirmed = confirm("Clear ALL tool history?");
+    }
+
+    // 4️⃣ HANDLE CANCELLATION
+    if (!confirmed) {
+        // If they said NO, show the history list again
+        openToolHistory();
+        return;
+    }
+
+    // 5️⃣ DELETE OPERATION
+    try {
+      const { error } = await sb
+        .from("tool_history")
+        .delete()
+        .eq("user_id", window.currentUser.id);
+
+      if (error) throw error;
+
+      // Reset list state (but keep closed until user opens it again)
+      historyList.innerHTML = "<p>No history found yet.</p>";
+      showToast("History cleared successfully! 🧹", "success");
+      console.log("🧹 Tool history cleared");
+      
+    } catch (e) {
+      showToast("Failed to clear history.", "error");
+      console.error(e);
+      // Re-open if error, so they know what happened
+      openToolHistory();
+    }
+  };
+}
+
+/* =========================================================
+   9. VOICE INPUT
+========================================================= */
 const micBtn = document.getElementById("voiceBtn");
 const voiceStatus = document.getElementById("voiceStatus");
 
 if ("webkitSpeechRecognition" in window && micBtn) {
   const recognition = new webkitSpeechRecognition();
-  recognition.lang = "en-US"; // English only
+  recognition.lang = "en-US";
   recognition.continuous = false;
   recognition.interimResults = false;
 
   micBtn.onclick = () => {
     if (isLoading) return;
-
     micBtn.classList.add("active");
     if (voiceStatus) voiceStatus.innerText = "Listening… 🎧";
-
     recognition.start();
   };
 
@@ -477,32 +510,57 @@ if ("webkitSpeechRecognition" in window && micBtn) {
     if (voiceStatus) voiceStatus.innerText = "Voice error ❌";
   };
 } else {
-  // Browser not supported
   if (micBtn) micBtn.style.display = "none";
 }
-const clearToolHistoryBtn = document.getElementById("clearToolHistoryBtn");
 
-if (clearToolHistoryBtn) {
-  clearToolHistoryBtn.onclick = async () => {
-    if (!window.currentUser) return;
+/* =========================================================
+   10. TOAST NOTIFICATION (Fixed Z-Index)
+========================================================= */
+function showToast(message, type = "success") {
+  // Create toast container if it doesn't exist
+  let toastContainer = document.getElementById("toast-container");
+  if (!toastContainer) {
+    toastContainer = document.createElement("div");
+    toastContainer.id = "toast-container";
+    // FIX: Ultra-high Z-Index so it appears above everything
+    toastContainer.style.cssText = `
+      position: fixed; top: 20px; right: 20px; z-index: 2147483647;
+      display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    `;
+    document.body.appendChild(toastContainer);
+  }
 
-    const ok = confirm("Clear ALL tool history? This cannot be undone.");
-    if (!ok) return;
+  // Create the toast element
+  const toast = document.createElement("div");
+  
+  // Color configuration
+  let bg = "#00C851"; // Default Green
+  let color = "#fff";
+  
+  if (type === "error") { bg = "#ff4d4d"; }
+  else if (type === "warning") { bg = "#ffca28"; color = "#333"; }
+  
+  toast.innerText = message;
+  toast.style.cssText = `
+    background: ${bg}; color: ${color}; padding: 12px 24px;
+    border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-family: sans-serif; font-weight: 600; font-size: 14px;
+    opacity: 0; transform: translateX(20px); transition: all 0.3s ease;
+    pointer-events: auto;
+  `;
 
-    try {
-      const { error } = await sb
-        .from("tool_history")
-        .delete()
-        .eq("user_id", window.currentUser.id);
+  toastContainer.appendChild(toast);
 
-      if (error) throw error;
+  // Animate In
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(0)";
+  });
 
-      historyList.innerHTML = "<p>History cleared 🧹</p>";
-      console.log("🧹 Tool history cleared");
-    } catch (e) {
-      alert("Failed to clear history");
-      console.error(e);
-    }
-  };
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(20px)";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
-
