@@ -120,14 +120,15 @@ Designed with a **mobile-first, touch-friendly UI**.
 ## 🎥 Demo Video
 
 📺 Watch the full product demo:  
-👉 **[PASTE DEMO VIDEO LINK HERE]**
+👉 **[https://youtu.be/4wFDBiJyh50?si=3RcWNLXlXcFOES-6]**
 
 ---
 
 ## ⚙️ Setup Instructions
 
 ```bash
-git clone https://github.com/your-username/boostme.git
+git clone https://github.com/manikumarkundena/BoostMe.git
 cd boostme
 npm install
 npm start
+
