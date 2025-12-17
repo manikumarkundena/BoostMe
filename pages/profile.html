@@ -7,7 +7,78 @@
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
     <link rel="stylesheet" href="../styles/profile.css">
     <link rel="stylesheet" href="../styles/modal.css">
-<script src="../scripts/ui.js"></script>
+    <script src="../scripts/ui.js"></script>
+
+    <style>
+        /* --- DARK MODE PROFILE STYLES --- */
+[data-theme="dark"] body {
+    background: #0f172a; /* Deep Navy/Slate background */
+    color: #e2e8f0;
+}
+
+/* Glass Panel for Dark Mode */
+[data-theme="dark"] .glass-panel {
+    background: rgba(30, 41, 59, 0.7); /* Darker, more opaque glass */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Input Fields in Dark Mode */
+[data-theme="dark"] .input-group input {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .input-group i {
+    color: #94a3b8; /* Muted icons */
+}
+
+[data-theme="dark"] .input-group input:focus {
+    border-color: #6c63ff;
+    background: rgba(15, 23, 42, 0.8);
+}
+
+/* Text and Labels */
+[data-theme="dark"] .section-label {
+    color: #a29bfe; /* Light purple accent */
+}
+
+[data-theme="dark"] .profile-header h2 {
+    color: #ffffff;
+}
+
+[data-theme="dark"] #profileEmailDisplay, 
+[data-theme="dark"] .form-section p {
+    color: #94a3b8;
+}
+
+/* Divider Color */
+[data-theme="dark"] .divider {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Buttons in Dark Mode */
+[data-theme="dark"] .secondary-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Top Bar Back Link */
+[data-theme="dark"] .back-link {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .back-link:hover {
+    color: #ffffff;
+}
+
+    </style>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -65,8 +136,8 @@
 
         </div>
         <div style="text-align: center; margin-top: 30px; margin-bottom: 20px; color: var(--text-muted); font-size: 12px; opacity: 0.5;">
-    BoostMe v1.0 • © 2025
-</div>
+            BoostMe v1.0 • © 2025
+        </div>
     </main>
 
     <script src="../scripts/supabase.js"></script>
@@ -111,10 +182,16 @@
             document.getElementById("profileAvatarDisplay").src = currentAvatar;
         });
 
+        // Use async here to await custom modals
         async function updateProfile() {
             const btn = document.getElementById("saveProfileBtn");
             const newName = document.getElementById("editName").value;
             const originalText = btn.innerText;
+
+            if (!newName.trim()) {
+                await ui.alert("Oops!", "Display name cannot be empty.");
+                return;
+            }
 
             btn.innerText = "Saving...";
             btn.disabled = true;
@@ -127,14 +204,13 @@
                 .upsert({ 
                     id: user.id,
                     display_name: newName,
-                    // Persist existing avatar if we aren't changing it here
                     avatar_url: document.getElementById("profileAvatarDisplay").src
                 });
 
             if (error) {
-                alert("Error: " + error.message);
+                await ui.alert("Error", error.message);
             } else {
-                alert("✅ Profile Updated!");
+                await ui.alert("Success", "✅ Profile details updated!");
                 document.getElementById("profileNameDisplay").innerText = newName;
             }
             btn.innerText = originalText;
@@ -146,7 +222,7 @@
             const btn = document.getElementById("passBtn");
 
             if (!newPass || newPass.length < 6) {
-                alert("Password must be at least 6 characters.");
+                await ui.alert("Security", "Password must be at least 6 characters.");
                 return;
             }
 
@@ -156,9 +232,9 @@
             const { error } = await sb.auth.updateUser({ password: newPass });
 
             if (error) {
-                alert("Error: " + error.message);
+                await ui.alert("Error", error.message);
             } else {
-                alert("✅ Password Changed Successfully!");
+                await ui.alert("Success", "✅ Password changed successfully!");
                 document.getElementById("newPassword").value = "";
             }
             btn.innerText = "Update Password";

@@ -10,6 +10,49 @@
   <link rel="stylesheet" href="../styles/tools.css" />
   <script src="https://unpkg.com/lucide@latest"></script>
    <style>
+
+    /* --- STABLE CENTER BUTTON STYLE --- */
+.navbar-center-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(108, 99, 255, 0.1); /* Subtle Purple Tint */
+    color: #6c63ff;
+    border: 1px solid rgba(108, 99, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover: Purple Glow */
+.navbar-center-btn:hover {
+    background: #6c63ff;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Click: Blue Squeeze Effect */
+.navbar-center-btn:active {
+    background: #4834d4; /* Deep Blue */
+    transform: scale(0.92);
+    box-shadow: 0 2px 5px rgba(108, 99, 255, 0.2);
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] .navbar-center-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #a29bfe;
+    border-color: rgba(162, 155, 254, 0.2);
+}
+
+/* Keep logo area clean on small phones */
+@media (max-width: 480px) {
+    .hide-mobile { display: none; }
+    .navbar-center-btn { width: 38px; height: 38px; }
+}
         .icon-btn-small {
             width: 40px; height: 40px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
@@ -29,24 +72,24 @@
 
 <body>
   <!-- TOP BAR -->
-  <header class="top-bar">
-    <div class="top-left">
+
+  <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; position: relative;">
+    
+    <div class="top-left" style="flex: 1; display: flex; align-items: center;">
         <img src="../assets/images/boostme-logo.png" class="top-logo">
-        <div>
-            <div class="top-app-name">BoostMe</div>
+        <div class="hide-mobile"> <div class="top-app-name">BoostMe</div>
             <div class="top-subtext">Productivity OS</div>
         </div>
     </div>
-    <button id="toolHistoryBtn" class="icon-btn secondary-icon" title="Tool History">
-  <i data-lucide="history"></i>
-</button>
 
-
-
-    <!-- 🔥 THIS IS IMPORTANT -->
-    <div class="top-right" id="navbar-right">
-        <!-- navbar.js injects content here -->
+    <div class="top-center" style="flex: 1; display: flex; justify-content: center;">
+        <button id="toolHistoryBtn" class="navbar-center-btn" title="Tool History">
+            <i data-lucide="history" width="22"></i>
+        </button>
     </div>
+
+    <div class="top-right" id="navbar-right" style="flex: 1; display: flex; justify-content: flex-end;">
+        </div>
 </header>
 
   <!-- MAIN CONTENT -->

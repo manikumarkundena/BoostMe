@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const modalHTML = `
         <div id="boostModal" class="modal-overlay">
             <div class="custom-modal">
-                <img src="../assets/images/boostme-logo.png" class="modal-logo" alt="BoostMe">
+                <img src="../assets/images/boostme-rounded.png" class="modal-logo" alt="BoostMe">
                 <h3 id="modalTitle" class="modal-title">Alert</h3>
                 <p id="modalMessage" class="modal-message">Message goes here...</p>
                 <div id="modalActions" class="modal-actions">

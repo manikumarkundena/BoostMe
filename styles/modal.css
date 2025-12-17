@@ -96,3 +96,43 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
 }
+/* --- ENHANCED DARK MODE MODAL --- */
+[data-theme="dark"] .custom-modal {
+    background: rgba(15, 23, 42, 0.8) !important; /* Deep Slate Transparent */
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    
+    /* Subtle glowing border */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    
+    /* Stronger outer shadow for depth */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 
+                0 0 20px rgba(108, 99, 255, 0.1) !important; 
+}
+
+/* Success Title Text */
+[data-theme="dark"] .modal-title {
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+/* Success Message Text */
+[data-theme="dark"] .modal-message {
+    color: #cbd5e1 !important; /* Lighter slate for readability */
+}
+
+/* The "Got it" Button Polish */
+[data-theme="dark"] .btn-confirm {
+    background: linear-gradient(135deg, #6c63ff, #8b5cf6) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4);
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .btn-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 99, 255, 0.6);
+    filter: brightness(1.1);
+}

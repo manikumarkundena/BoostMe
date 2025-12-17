@@ -3,79 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <title>BoostMe – Chat</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <script src="https://unpkg.com/lucide@latest"></script>
 
     <link rel="stylesheet" href="../styles/modal.css">
     <link rel="stylesheet" href="../styles/global.css">
     <link rel="stylesheet" href="../styles/chat.css">
     <script src="../scripts/ui.js"></script>
-<link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
     <style>
-        /* --- 1. NAVBAR ADJUSTMENTS --- */
-        .top-bar {
-            position: relative; /* Needed to center the history button */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px; /* Adjust as per your global.css */
-        }
+        /* --- STABLE CENTER BUTTON --- */
+.navbar-center-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px; /* Squircle shape looks more modern */
+    background: rgba(108, 99, 255, 0.1); /* Subtle purple tint */
+    color: #6c63ff;
+    border: 1px solid rgba(108, 99, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
 
-        /* --- 2. CENTERED HISTORY BUTTON --- */
-        .center-nav-btn {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%); /* Perfectly Centers it */
-            
-            /* Styling to match Dashboard Button */
-            width: 42px; 
-            height: 42px; 
-            border-radius: 50%;
-            background-color: #f3f4f6; /* Light Gray */
-            color: #374151;
-            border: none;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+/* Hover: Purple Glow & Fill */
+.navbar-center-btn:hover {
+    background: #6c63ff;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4);
+    transform: translateY(-2px);
+}
 
-        /* Hover Effect */
-        .center-nav-btn:hover {
-            background-color: #6c63ff; /* Brand Purple */
-            color: white;
-            transform: translateX(-50%) translateY(-2px); /* Maintain center + lift */
-            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
-        }
+/* Click: Blue Squeeze Effect */
+.navbar-center-btn:active {
+    background: #4834d4; /* Deep Blue on click */
+    transform: scale(0.92);
+    box-shadow: 0 2px 5px rgba(108, 99, 255, 0.2);
+}
 
-        /* Dark Mode Support */
-        [data-theme="dark"] .center-nav-btn {
-            background-color: #2d2d2d;
-            color: #e0e0e0;
-        }
-        [data-theme="dark"] .center-nav-btn:hover {
-            background-color: #6c63ff;
-            color: white;
-        }
+/* Dark Mode Adjustments */
+[data-theme="dark"] .navbar-center-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #a29bfe;
+    border-color: rgba(162, 155, 254, 0.2);
+}
+
+/* Responsive: Hide text on tiny phones to keep button centered */
+@media (max-width: 480px) {
+    .hide-mobile { display: none; }
+    .navbar-center-btn { width: 38px; height: 38px; }
+}
+        
     </style>
-</head>
+    </head>
 
 <body>
-
-<header class="top-bar">
-    <div class="top-left">
+    <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
+    <div class="top-left" style="flex: 1; display: flex; align-items: center;">
         <img src="../assets/images/boostme-logo.png" class="top-logo">
-        <div>
-            <div class="top-app-name">BoostMe</div>
+        <div class="hide-mobile"> <div class="top-app-name">BoostMe</div>
             <div class="top-subtext">Productivity OS</div>
         </div>
     </div>
 
-    <button id="historyBtn" class="center-nav-btn" title="View Chat History">
-       <i data-lucide="history" width="22"></i>
-    </button>
+    <div class="top-center" style="flex: 1; display: flex; justify-content: center;">
+        <button id="historyBtn" class="navbar-center-btn" title="View Chat History">
+           <i data-lucide="history" width="22"></i>
+        </button>
+    </div>
 
-    <div class="header-actions">
+    <div class="header-actions" style="flex: 1; display: flex; justify-content: flex-end;">
         <div id="navbar-right"></div>
     </div>
 </header>
