@@ -1,58 +1,70 @@
-# 🚀 BoostMe — AI-Powered Student Productivity & Wellness Platform
+# 🚀 BoostMe  
+### AI-Powered Student Productivity & Wellness Platform  
 
 <p align="center">
   <strong>Manikumar K</strong><br/>
-  Building meaningful things with code & AI
+  <em>Building meaningful things with code & AI</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/AI-Powered-purple?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Student--Focused-💡-blue?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Web-App-success?style=for-the-badge"/>
 </p>
 
 ---
 
-## 🌟 Overview
+## 🌟 What is BoostMe?
 
-**BoostMe** is a student-focused web application that blends **productivity**, **mental wellness**, and **AI assistance** into a single, simple, and mobile-friendly platform.
+**BoostMe** is a student-centric web application that blends  
+🧠 **mental wellness**, ⚡ **productivity**, and 🤖 **AI assistance**  
+into one clean, distraction-free platform.
 
-It is designed for students who feel stressed, overwhelmed, or mentally stuck — offering them a supportive AI companion, focus tools, stress-relief features, and smart AI utilities in one place.
+It’s built for students who feel:
+- Stressed 😔  
+- Overwhelmed 🧠  
+- Unable to focus 📉  
 
----
-
-## 🎯 Why BoostMe?
-
-Students often struggle with:
-- Mental stress and emotional overload  
-- Procrastination and lack of focus  
-- No safe space to vent or reset  
-- Fragmented productivity tools  
-
-**BoostMe** solves this by combining:
-- A friendly AI chat companion  
-- Short focus and deep-work tools  
-- Stress-relief and chill interactions  
-- AI-powered student utilities  
-
-—all in one clean experience.
+BoostMe helps them **reset, refocus, and move forward**.
 
 ---
 
-## 🧠 Key Features
+## 🎯 Why BoostMe Exists
+
+Most productivity tools ignore mental health.  
+Most mental-health apps ignore productivity.
+
+**BoostMe bridges both.**
+
+✔ Vent emotions  
+✔ Regain focus  
+✔ Reduce stress  
+✔ Get AI help — instantly  
+
+All in **one simple interface**.
+
+---
+
+## 🧠 Core Features
 
 ### 💬 AI Chat Buddy
-- Express thoughts freely without judgment  
-- Supportive, empathetic AI responses  
-- Optional quick focus challenges  
+- Share thoughts freely & safely  
+- Friendly, empathetic AI replies  
+- Suggests quick focus challenges  
 
 ---
 
-### 🎯 Focus Mode
-- Custom focus session durations  
-- Live UI updates during the session  
-- Sound alert when the timer ends  
+### ⏱️ Focus Mode
+- Custom focus time (1 min – longer)  
+- Live UI countdown updates  
+- 🔔 Sound alert when session ends  
 
 ---
 
 ### 😌 Chill Zone
-- Pop-it style interaction for instant stress relief  
-- Vent box to release thoughts and emotions  
-- Breathing-based calming interactions  
+- 🫧 Pop-It style stress relief  
+- 🔥 Vent Box to release thoughts  
+- 🌬️ Breathing-based calm tools  
 
 ---
 
@@ -60,75 +72,71 @@ Students often struggle with:
 - 📘 Study Helper  
 - ✍️ Writing Assistant  
 - 💡 Idea Generator  
-- 🧩 Developer Helper  
+- 🧩 Dev Helper  
 
-All tools are available from a unified interface for seamless switching.
+All tools live in **one unified panel**.
 
 ---
 
 ### 📊 Dashboard Insights
-- Graph-based visualization of user activity  
-- Helps users understand focus and engagement patterns over time  
+- Visual graphs based on usage  
+- Helps track focus & engagement patterns  
 
 ---
 
 ### 🔐 Secure History & Profile
-- Chat and tool history accessible after login  
-- User authentication and data persistence handled securely  
+- Chat & tool history saved **after login**  
+- Privacy-first authentication using Supabase  
 
 ---
 
 ## 🧭 App Navigation
 
-- **Home** — Dashboard & visual insights  
-- **Chat** — AI Buddy  
-- **Focus** — Deep work tools  
-- **Chill** — Mental wellness hub  
-- **Tools** — AI-powered assistants  
-- **Profile** — Account and settings  
+| Section | Purpose |
+|------|--------|
+| 🏠 Home | Dashboard & graphs |
+| 💬 Chat | AI Buddy |
+| 🎯 Focus | Deep work tools |
+| 😌 Chill | Stress relief |
+| 🧠 Tools | AI utilities |
+| 👤 Profile | Account & history |
 
-Designed with a **mobile-first, touch-friendly UI**.
+Designed **mobile-first** 📱  
+Big buttons, easy taps, clean UI.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- HTML  
-- CSS  
-- JavaScript  
-
-### Backend
-- Node.js  
-- Express  
-
-### Database & Authentication
-- Supabase  
-
-### Deployment
-- Fully deployed and accessible online  
+<p align="center">
+  <img src="https://img.shields.io/badge/HTML-orange?style=for-the-badge&logo=html5"/>
+  <img src="https://img.shields.io/badge/CSS-blue?style=for-the-badge&logo=css3"/>
+  <img src="https://img.shields.io/badge/JavaScript-yellow?style=for-the-badge&logo=javascript"/>
+  <img src="https://img.shields.io/badge/Supabase-Auth%20%26%20DB-green?style=for-the-badge&logo=supabase"/>
+</p>
 
 ---
 
-## 🌐 Live Project
+## 🚀 Live Demo
 
-🚀 Try BoostMe here:  
-👉 **[https://manikumars-boostme.vercel.app/]**
+<p align="center">
+  👉 <a href="https://manikumars-boostme.vercel.app/" target="_blank"><strong>Click here to try BoostMe</strong></a>
+</p>
 
 ---
 
 ## 🎥 Demo Video
 
-📺 Watch the full product demo:  
-👉 **[https://youtu.be/4wFDBiJyh50?si=3RcWNLXlXcFOES-6]**
+<p align="center">
+  🎬 <a href="https://youtu.be/4wFDBiJyh50" target="_blank"><strong>Watch Full Demo on YouTube</strong></a>
+</p>
 
 ---
 
-## ⚙️ Setup Instructions
+## ⚙️ How to Run Locally
 
 ```bash
+# Clone the repository
 git clone https://github.com/manikumarkundena/BoostMe.git
-cd boostme
-npm install
-npm start
 
+# Open index.html in your browser
