@@ -9,8 +9,11 @@ const fireUI = document.getElementById("fireUI");
 const breatheText = document.getElementById("breatheText");
 const cards = document.querySelectorAll(".chill-card");
 
-// AUDIO ELEMENTS (Streaming Music)
+// AUDIO ELEMENTS
 const lofiAudio = document.getElementById("lofiMusic");
+
+// AI CONFIG
+const BACKEND_URL = "https://boostme-a0ca.onrender.com/api/chat";
 
 /* ===============================
    SWITCHER LOGIC
@@ -38,12 +41,25 @@ function switchMode(mode) {
     else if (mode === 'fire') {
         fireUI.style.display = "flex";
         fireUI.style.flexDirection = "column";
+        // Reset fire UI
+        const inputArea = document.getElementById("ventInputArea");
+        const msgArea = document.getElementById("postBurnMsg");
+        if(inputArea) {
+            inputArea.style.display = "block";
+            inputArea.style.opacity = "1";
+        }
+        if(msgArea) msgArea.style.display = "none";
+        // Reset input value
+        const vInput = document.getElementById("ventText");
+        if(vInput) {
+            vInput.value = "";
+            vInput.classList.remove("burning");
+        }
     }
 
     // 4. Update Visual Active State
     cards.forEach(c => c.classList.remove("active-mode"));
     
-    // Highlight correct card (Indices: 0=Breathe, 1=Pop, 3=Fire)
     if(mode === 'breathe' && cards[0]) cards[0].classList.add("active-mode");
     if(mode === 'pop' && cards[1]) cards[1].classList.add("active-mode");
     if(mode === 'fire' && cards[3]) cards[3].classList.add("active-mode");
@@ -59,26 +75,20 @@ let breatheInterval;
 
 function startBreathingText() {
     updateText();
-    // 8s cycle (4s inhale/hold + 4s exhale)
     breatheInterval = setInterval(updateText, 8000); 
 }
 
 function updateText() {
-    // INHALE
     if(breatheText) {
         breatheText.innerText = "Inhale";
         breatheText.style.transform = "scale(1.5)";
         breatheText.style.opacity = "1";
     }
 
-    // HOLD (at 4s)
     setTimeout(() => {
-        if(breatheText) {
-            breatheText.innerText = "Hold";
-        }
+        if(breatheText) breatheText.innerText = "Hold";
     }, 4000);
 
-    // EXHALE (at 6s) - Modified timing for better feel
     setTimeout(() => {
         if(breatheText) {
             breatheText.innerText = "Exhale";
@@ -94,26 +104,20 @@ function stopBreathingText() {
 }
 
 /* ===============================
-   2. BUBBLE WRAP LOGIC + SOUND 🫧
+   2. BUBBLE WRAP LOGIC
 ================================= */
 const bubbleGrid = document.getElementById("bubbleGrid");
-
-// 🆕 Mood Boost Emojis
 const POP_EMOJIS = ["✨", "💖", "🔥", "🍀", "💎", "🌟", "💜", "🚀", "😊", "🎵"];
 
 function initBubbles() {
     if(!bubbleGrid) return;
     bubbleGrid.innerHTML = "";
     
-    // Create 25 Bubbles
     for (let i = 0; i < 25; i++) { 
         const b = document.createElement("div");
         b.className = "bubble";
-        
-        // 🆕 Add a hidden emoji inside
         const randomEmoji = POP_EMOJIS[Math.floor(Math.random() * POP_EMOJIS.length)];
         b.innerHTML = `<span class="pop-content">${randomEmoji}</span>`;
-        
         b.onclick = () => popBubble(b);
         bubbleGrid.appendChild(b);
     }
@@ -121,22 +125,15 @@ function initBubbles() {
 
 function popBubble(el) {
     if (el.classList.contains("popped")) return;
-    
     el.classList.add("popped");
     
-    // 🔊 1. PLAY POP SOUND
     if(window.synth) window.synth.pop();
-    
-    // Haptics
     if (navigator.vibrate) navigator.vibrate(15);
 
-    // CHECK WIN CONDITION
     checkAllPopped();
     
-    // 🆕 Update Stress Label dynamically
     const remaining = document.querySelectorAll(".bubble:not(.popped)").length;
     const label = document.getElementById("stressLabel");
-    
     if(label) {
         if(remaining > 15) label.innerText = "Stress Level: High 😤";
         else if(remaining > 5) label.innerText = "Stress Level: Dropping... 📉";
@@ -147,45 +144,32 @@ function popBubble(el) {
 
 function checkAllPopped() {
     const remaining = document.querySelectorAll(".bubble:not(.popped)").length;
-    
     if (remaining === 0) {
-        // 🎉 ALL POPPED!
-        
-        // 1. STATS
         incrementDailyStats({ gamesPlayed: 1 });
-
-        // 2. ✨ SUCCESS TOAST POPUP
         showToast("So satisfying! Stress level zero! 🫧✨", "success");
 
         setTimeout(() => {
-            // 🔊 3. PLAY SUCCESS SOUND
             if(window.synth) window.synth.success();
             if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
             
-            // Visual feedback
             const btn = document.querySelector("#popUI .text-btn");
             if(btn) btn.innerText = "Nice Job! Resetting... 🎉";
             
-            // Auto Reset after 1.5s
             setTimeout(() => {
                 resetBubbles();
                 if(btn) btn.innerText = "Reset Sheet 🔄";
             }, 1500);
-            
         }, 300);
     }
 }
 
 function resetBubbles() {
     const bubbles = document.querySelectorAll(".bubble");
-    
-    // Staggered reset animation
     bubbles.forEach((b, index) => {
         setTimeout(() => {
             b.classList.remove("popped");
-            // Tiny sound for mechanical reset feel
             if(window.synth && index % 5 === 0) window.synth.hover(); 
-        }, index * 20); // Wave effect
+        }, index * 20);
     });
 }
 
@@ -196,91 +180,138 @@ let isMusicPlaying = false;
 
 function toggleMusic(card) {
     if (isMusicPlaying) {
-        // Stop Music
         if(lofiAudio) {
             lofiAudio.pause();
-            lofiAudio.src = lofiAudio.src; // Disconnect stream to save data
+            lofiAudio.src = lofiAudio.src; 
         }
         card.classList.remove("playing");
     } else {
-        // Start Music
         if(lofiAudio) {
-            // Reload src to ensure stream is live
             const currentSrc = lofiAudio.querySelector('source').src;
             lofiAudio.src = currentSrc; 
             lofiAudio.volume = 0.5;
             lofiAudio.play().catch(e => showToast("Tap again to play (Auto-audio blocked)", "warning"));
         }
         card.classList.add("playing");
-        
-        // 🔊 Sound Effect
         if(window.synth) window.synth.click();
     }
     isMusicPlaying = !isMusicPlaying;
 }
 
 /* ===============================
-   4. BONFIRE LOGIC
+   4. BONFIRE LOGIC (FIXED LAYOUT 🔥)
 ================================= */
 const ventInput = document.getElementById("ventText");
 const inputArea = document.getElementById("ventInputArea");
 const postBurnMsg = document.getElementById("postBurnMsg");
 
-const WISDOM_QUOTES = [
-    "Let it go. You are doing your best.",
-    "Breathe. This is just a moment.",
-    "Release the weight. You are free now.",
-    "Peace comes from within.",
-    "New beginnings are often disguised as painful endings."
-];
+function stopFireSound() {}
 
-function stopFireSound() {
-    // If you add a fire loop later, stop it here
+// ✨ ENHANCED AI PROMPT FOR EMOTIONAL SUPPORT
+async function getVentResponse(text) {
+    try {
+        const response = await fetch(BACKEND_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                messages: [
+                    { 
+                        role: "system", 
+                        content: `You are a warm, empathetic soul. The user is burning their stress/pain.
+                        - If they sound sad/broken: Reply with deep compassion, validation, and a gentle virtual hug.
+                        - If they sound angry: Acknowledge the fire and let them release it.
+                        - If they sound tired: Offer rest and peace.
+                        - Keep it to 1-2 sentences max. Be poetic and comforting.` 
+                    },
+                    { role: "user", content: text }
+                ]
+            })
+        });
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || data.content || "Your pain ripples like a stormy sea, and it's okay to acknowledge its depths.";
+    } catch (e) {
+        console.error(e);
+        return "Let the fire consume your worry. You are safe now.";
+    }
 }
 
-function burnStress() {
-    if (!ventInput.value.trim()) {
+async function burnStress() {
+    const text = ventInput.value.trim();
+    if (!text) {
         showToast("Write something to burn first! 🔥", "warning");
         return;
     }
 
-    // 🔊 Sound Effect
     if(window.synth) window.synth.click();
 
+    // 1. ANIMATION START
     ventInput.classList.add("burning");
+    if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
 
-    // Wait for animation
-    setTimeout(() => {
-        if(inputArea) inputArea.style.display = "none";
-        
-        const quote = WISDOM_QUOTES[Math.floor(Math.random() * WISDOM_QUOTES.length)];
-        
-        if(postBurnMsg) {
-            postBurnMsg.innerHTML = `
-                <span>"${quote}"</span><br><br>
+    // 2. SHOW LOADING STATE (Pulsing Ember)
+    if(inputArea) inputArea.style.opacity = "0"; 
+    
+    if(postBurnMsg) {
+        // Ensure flex centering for loading too
+        postBurnMsg.style.display = "flex";
+        postBurnMsg.style.flexDirection = "column";
+        postBurnMsg.style.justifyContent = "center";
+        postBurnMsg.style.alignItems = "center";
+        postBurnMsg.style.height = "100%"; // FILL CONTAINER
+
+        postBurnMsg.innerHTML = `
+            <div style="font-size:3rem; animation: pulse 1.5s infinite; filter: drop-shadow(0 0 15px orange);">🔥</div>
+            <div style="margin-top:15px; color:#ff8b2d; opacity:0.8; font-size:0.9rem;">Consuming your stress...</div>
+        `;
+    }
+
+    // 3. WAIT FOR AI (Min 1.5s for effect)
+    const minWait = new Promise(r => setTimeout(r, 1500));
+    const aiPromise = getVentResponse(text);
+    const [_, aiText] = await Promise.all([minWait, aiPromise]);
+
+    // 4. SHOW RESULT (Centered & Balanced)
+    if(inputArea) {
+        inputArea.style.display = "none";
+        inputArea.style.opacity = "1";
+    }
+    
+    if(postBurnMsg) {
+        postBurnMsg.innerHTML = `
+            <div style="animation: fadeIn 0.8s ease; text-align: center; padding: 20px; max-width: 90%;">
+                
+                <p style="
+                    font-size: 1.35rem; 
+                    line-height: 1.5; 
+                    font-weight: 500; 
+                    color: #ff8b2d; 
+                    font-style: italic; 
+                    text-shadow: 0 2px 10px rgba(255, 140, 0, 0.15); 
+                    margin: 0 0 40px 0;
+                ">"${aiText}"</p>
+
                 <button class="text-btn" onclick="resetFire()">Vent More</button>
-            `;
-            postBurnMsg.style.display = "block";
-            
-            // 🔊 Success Sound for relief
-            if(window.synth) window.synth.success();
-        }
+            </div>
+        `;
+        
+        if(window.synth) window.synth.success();
+    }
 
-        ventInput.value = "";
-        ventInput.classList.remove("burning");
-        
-        if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-        
-        // 🔥 BURN COMPLETE - STATS
-        incrementDailyStats({ completed_tasks: 1 });
-        showToast("It's gone now. You're free. 🍃", "success");
-        
-    }, 800);
+    ventInput.value = "";
+    ventInput.classList.remove("burning");
+    
+    incrementDailyStats({ completed_tasks: 1 });
 }
 
 function resetFire() {
-    if(postBurnMsg) postBurnMsg.style.display = "none";
-    if(inputArea) inputArea.style.display = "block";
+    const msgArea = document.getElementById("postBurnMsg");
+    const inputArea = document.getElementById("ventInputArea");
+    
+    if(msgArea) msgArea.style.display = "none";
+    if(inputArea) {
+        inputArea.style.display = "block";
+        inputArea.style.animation = "fadeIn 0.5s ease";
+    }
     if(window.synth) window.synth.click();
 }
 
@@ -320,7 +351,7 @@ async function incrementDailyStats(updates) {
 }
 
 /* ===============================
-   TOAST NOTIFICATION HELPER
+   TOAST NOTIFICATION
 ================================*/
 function showToast(message, type = "success") {
   let toastContainer = document.getElementById("toast-container");
@@ -335,10 +366,8 @@ function showToast(message, type = "success") {
   }
 
   const toast = document.createElement("div");
-  
-  let bg = "#00C851"; // Green
+  let bg = "#00C851"; 
   let color = "#fff";
-  
   if (type === "error") { bg = "#ff4d4d"; }
   else if (type === "warning") { bg = "#ffca28"; color = "#333"; }
   
@@ -352,12 +381,10 @@ function showToast(message, type = "success") {
   `;
 
   toastContainer.appendChild(toast);
-
   requestAnimationFrame(() => {
     toast.style.opacity = "1";
     toast.style.transform = "translateX(0)";
   });
-
   setTimeout(() => {
     toast.style.opacity = "0";
     toast.style.transform = "translateX(20px)";

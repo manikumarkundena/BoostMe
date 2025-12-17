@@ -146,3 +146,50 @@
     color: var(--text-muted);
     font-weight: 500;
 }
+/* =========================================
+   🌙 DARK MODE FIXES (Add to bottom of dashboard.css)
+   ========================================= */
+
+/* 1. Fix Level Text Visibility */
+[data-theme="dark"] .level-text {
+    color: rgba(255, 255, 255, 0.7) !important; /* Force light grey */
+    font-weight: 500;
+}
+
+/* 2. Fix Level Card Background */
+[data-theme="dark"] .level-card-wrapper {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* 3. Fix Top Stats Cards (Glass Effect) */
+[data-theme="dark"] .stat-card {
+    background: rgba(30, 30, 30, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .stat-value {
+    color: #ffffff !important; /* Bright white numbers */
+    text-shadow: 0 0 10px rgba(255,255,255,0.1);
+}
+
+[data-theme="dark"] .stat-label {
+    color: #aaaaaa !important; /* Muted label text */
+}
+
+/* 4. Fix Charts Background */
+[data-theme="dark"] .chart-card {
+    background: rgba(30, 30, 30, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 5. Fix Insight Card */
+[data-theme="dark"] .insight-card {
+    background: rgba(108, 92, 231, 0.15); /* Slightly brighter purple tint */
+    border: 1px solid rgba(108, 92, 231, 0.3);
+}
+[data-theme="dark"] .insight-content p {
+    color: #e0e0e0 !important;
+}

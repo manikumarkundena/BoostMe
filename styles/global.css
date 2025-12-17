@@ -822,3 +822,266 @@ button:active, .tool-card:active, .nav-item:active {
     background-color: #6c63ff;
     color: white;
 }
+
+/* =========================================
+   🌙 DARK MODE OVERRIDES (Add to bottom of global.css)
+   ========================================= */
+
+/* --- 1. MODAL FIXES (History & Tools) --- */
+[data-theme="dark"] .history-modal .history-content,
+[data-theme="dark"] .modal-content, 
+[data-theme="dark"] .glass-panel {
+    background: rgba(30, 30, 30, 0.85) !important; /* Dark Glass */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Fix text inside history items */
+[data-theme="dark"] .history-item {
+    background: rgba(255, 255, 255, 0.05); /* Slight light tint */
+    color: #e0e0e0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .history-date {
+    color: #a0a0a0;
+}
+
+[data-theme="dark"] h2, 
+[data-theme="dark"] h3, 
+[data-theme="dark"] p {
+    color: #ffffff;
+}
+
+/* --- 2. INPUT & PASSWORD EYE FIX --- */
+[data-theme="dark"] input, 
+[data-theme="dark"] textarea, 
+[data-theme="dark"] select {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    border-color: #444;
+}
+
+/* Placeholder text color */
+[data-theme="dark"] ::placeholder {
+    color: #888;
+}
+
+/* 👁️ THE EYE ICON FIX */
+[data-theme="dark"] .lucide-eye, 
+[data-theme="dark"] .lucide-eye-off {
+    stroke: #ffffff !important; /* Forces icon lines to be white */
+    opacity: 0.7;
+}
+
+/* --- 3. DASHBOARD CARDS FIX --- */
+[data-theme="dark"] .stat-card, 
+[data-theme="dark"] .dashboard-card {
+    background: #1e1e1e; /* Dark card background */
+    color: #fff;
+    border: 1px solid #333;
+}
+
+[data-theme="dark"] .stat-label, 
+[data-theme="dark"] .chart-label {
+    color: #aaa; /* Muted text for labels */
+}
+
+[data-theme="dark"] .stat-value {
+    color: #fff; /* Bright white for numbers */
+}
+
+/* --- 4. ABOUT PAGE (MEET CREATOR) FIX --- */
+/* Ensure the main container in about.html uses variables */
+[data-theme="dark"] body {
+    background-color: #121212; /* Fallback if gradient fails */
+    color: white;
+}
+
+[data-theme="dark"] .about-card, 
+[data-theme="dark"] .profile-card {
+    background: rgba(30, 30, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .about-text {
+    color: #ddd;
+}
+
+/* --- 5. BUTTONS IN DARK MODE --- */
+[data-theme="dark"] .secondary-btn {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+[data-theme="dark"] .secondary-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* =========================================
+   🌙 HISTORY LIST FIXES (Chat & Tools)
+   ========================================= */
+
+/* 1. Default State (Visible Text) */
+[data-theme="dark"] .history-item,
+[data-theme="dark"] .tool-history-item {
+    background-color: rgba(255, 255, 255, 0.05); /* Slight box background */
+    color: #e0e0e0 !important; /* Force Light Text */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+/* 2. Hover State (Highlight) */
+[data-theme="dark"] .history-item:hover,
+[data-theme="dark"] .tool-history-item:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important; /* Lighter on hover */
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 3. Fix the "Text Only Appearing on Hover" issue */
+/* This targets the text specifically inside the history items */
+[data-theme="dark"] .history-item span,
+[data-theme="dark"] .history-item div,
+[data-theme="dark"] .history-item p {
+    color: #e0e0e0 !important;
+}
+
+/* 4. Fix Chat Bubble Colors inside History (If they exist) */
+[data-theme="dark"] .history-item .user-bubble-preview {
+    background: #444;
+    color: white;
+}
+[data-theme="dark"] .history-item .ai-bubble-preview {
+    background: #2d2d2d;
+    color: #ccc;
+}
+/* =========================================
+   🏷️ TOOL HISTORY BADGE FIX (Dark Mode)
+   ========================================= */
+   /* =========================================
+   🔧 TOOLS HISTORY SPECIFIC FIX
+   ========================================= */
+
+/* 1. The Badge (Planner, Dev, etc.) */
+[data-theme="dark"] .history-tool-badge {
+    background: rgba(255, 255, 255, 0.15) !important; /* Glassy background */
+    color: #ffffff !important;       /* Bright White Text */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Shadow makes it pop */
+    
+    /* Ensure it looks like a pill/tag */
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 8px;
+    text-transform: capitalize;
+}
+
+/* 2. The Text (The user's query) */
+[data-theme="dark"] .history-query {
+    color: #e0e0e0 !important; /* Light Grey Text */
+    font-weight: 400;
+}
+
+/* 3. The Row Item Container */
+[data-theme="dark"] .history-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+[data-theme="dark"] .history-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* 4. Date Headers (Today, Yesterday) */
+[data-theme="dark"] .history-date-header {
+    color: #aaa !important;
+    font-size: 13px;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* =========================================
+   👤 PROFILE DROPDOWN POLISH
+   ========================================= */
+
+/* 1. The Dropdown Container (Glassy & Floating) */
+.profile-menu {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    transform-origin: top right;
+    animation: scaleIn 0.2s ease;
+    min-width: 200px;
+}
+
+/* 2. The Menu Items (Buttons) */
+.profile-menu button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Space between icon and text */
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border: none;
+    background: transparent;
+    color: #4b5563; /* Dark Grey */
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
+}
+
+/* 3. ✨ THE HOVER EFFECT */
+.profile-menu button:hover {
+    background: rgba(108, 92, 231, 0.1); /* Soft Purple Tint */
+    color: #6c5ce7; /* Primary Purple Text */
+    transform: translateX(5px); /* Slide slightly to the right */
+    box-shadow: -2px 0 0 #6c5ce7; /* Left border accent */
+}
+
+/* 4. Active/Pressed State */
+.profile-menu button:active {
+    transform: scale(0.98) translateX(5px);
+}
+
+/* 5. 🌙 DARK MODE OVERRIDES */
+[data-theme="dark"] .profile-menu {
+    background: rgba(30, 30, 30, 0.9);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .profile-menu button {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .profile-menu button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    box-shadow: -2px 0 0 #fff; /* White accent in dark mode */
+}
+
+/* Animation Keyframes */
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}

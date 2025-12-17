@@ -1,8 +1,13 @@
 /* =========================================
    1. THEME VARIABLES (Light & Dark)
    ========================================= */
+
+   /* =========================================
+   1. THEME VARIABLES (Light & Dark)
+   ========================================= */
+
+/* ☀️ DEFAULT (LIGHT) */
 :root {
-    /* ☀️ Light Mode Defaults */
     --page-bg: #f0f2f5;
     --glass-bg: rgba(255, 255, 255, 0.65);
     --glass-border: rgba(255, 255, 255, 0.6);
@@ -20,6 +25,24 @@
     --social-hover: #f8f9fa;
 }
 
+/* 🌙 DARK MODE (Triggered by data-theme="dark") */
+[data-theme="dark"] {
+    --page-bg: #0f172a; /* Deep Slate / Navy */
+    --glass-bg: rgba(30, 41, 59, 0.70); /* Dark Glass */
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-accent: #a29bfe; /* Neon Purple */
+
+    --chip-bg: rgba(51, 65, 85, 0.6);
+    --chip-text: #cbd5e1;
+
+    --social-bg: #1e293b;
+    --social-text: #e2e8f0;
+    --social-hover: #334155;
+}
 /* 🌙 Dark Mode Overrides */
 @media (prefers-color-scheme: dark) {
     :root {

@@ -67,7 +67,14 @@
 
         </div>
     </div>
-
+    <script>
+    // 1. Force Theme on Load
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // 2. Initialize Icons
+    lucide.createIcons();
+</script>
     <script>
         lucide.createIcons();
     </script>
