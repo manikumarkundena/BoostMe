@@ -1085,3 +1085,58 @@ button:active, .tool-card:active, .nav-item:active {
     from { opacity: 0; transform: scale(0.95) translateY(-10px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
+/* =========================================
+   📱 MOBILE SAFETY NET (Max-Width: 600px)
+   ========================================= */
+@media (max-width: 600px) {
+
+    /* 1. Make Stats Grid 1 Column on tiny screens */
+    /* If 2 columns feel too squashed, this makes them stack nicely */
+    .stats-row {
+        grid-template-columns: 1fr 1fr; /* Keep 2 if cards are small */
+    }
+    
+    /* 2. Stack the Charts vertically */
+    .charts-wrapper {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* 3. Adjust Padding so content touches edges less */
+    .about-container, 
+    .settings-container,
+    .page-content {
+        padding: 15px;
+        padding-bottom: 100px; /* Space for bottom nav */
+    }
+
+    /* 4. Make Modals Full Width on Mobile */
+    .modal-content, 
+    .history-modal .history-content {
+        width: 95% !important;
+        margin: 10% auto;
+        max-height: 80vh; /* Prevent it being too tall */
+        overflow-y: auto; /* Scrollable inside */
+    }
+
+    /* 5. Fix Tool Output Code Blocks */
+    pre {
+        white-space: pre-wrap;       /* Wrap long code lines */
+        word-wrap: break-word;
+        font-size: 12px;             /* Smaller code font */
+    }
+
+    /* 6. Profile Page adjustments */
+    .glass-panel, .glass-card {
+        padding: 20px; /* Less padding on mobile */
+    }
+}
+
+/* 🤏 EXTRA TINY SCREENS (iPhone SE / Fold) */
+@media (max-width: 380px) {
+    .stats-row {
+        grid-template-columns: 1fr !important; /* Force 1 column stack */
+    }
+    .stat-value {
+        font-size: 1.5rem; /* Smaller numbers */
+    }
+}
