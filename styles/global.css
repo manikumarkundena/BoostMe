@@ -1140,3 +1140,53 @@ button:active, .tool-card:active, .nav-item:active {
         font-size: 1.5rem; /* Smaller numbers */
     }
 }
+/* =========================================
+   📱 MOBILE "CHUNKY" MODE (Better Touch Experience)
+   ========================================= */
+@media (max-width: 600px) {
+
+    /* 1. Make the "Quick Action" buttons TALLER & BOLDER */
+    /* This targets the Chat, Focus, Chill, Tools buttons */
+    .dashboard-card, .stat-card {
+        min-height: 110px !important;  /* Taller buttons */
+        padding: 20px !important;      /* More breathing room */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;                     /* Space between icon and text */
+    }
+
+    /* 2. Make the Text BIGGER */
+    .stat-label, h3, .card-title {
+        font-size: 1rem !important;    /* Readable text (was tiny) */
+        font-weight: 700 !important;
+    }
+
+    /* 3. Make the Icons BIGGER */
+    .dashboard-card i, .stat-card i, [data-lucide] {
+        transform: scale(1.5);         /* 50% larger icons */
+        margin-bottom: 5px;
+    }
+
+    /* 4. Fix the Home Grid to be "Chunky 2-Column" */
+    /* This fills the width of the phone perfectly */
+    .quick-actions-grid, .stats-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr !important; /* Keep 2 columns */
+        gap: 15px !important;          /* Bigger gap looks cleaner */
+        padding: 0 5px;                /* Slight edge spacing */
+    }
+
+    /* 5. Vibe Check Banner (Top Banner) */
+    .vibe-check-banner {
+        padding: 20px !important;
+        margin-bottom: 25px !important;
+    }
+    
+    /* 6. Fix "Meet the Creator" Button */
+    .footer-btn {
+        padding: 15px !important;
+        font-size: 0.9rem !important;
+    }
+}
